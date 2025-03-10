@@ -1,0 +1,359 @@
+/* Fuentes */
+@font-face {
+    font-family: 'OpenSans';
+    src: url('./assets/fonts/OpenSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'OpenSans';
+    src: url('./assets/fonts/OpenSans-Bold.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'OpenSans';
+    src: url('./assets/fonts/OpenSans-ExtraBold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+  
+ /* 🌎 Fondo global */
+body {
+  background-color: #EEEEEE;
+  font-family: 'OpenSans', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* ✅ Barra de navegación verde */
+ion-toolbar {
+  --background: #4CAF50 !important;
+  --color: white !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+}
+
+/* ✅ Ajuste del tamaño del filtro de búsqueda */
+.search-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+ion-searchbar {
+  --background: white !important;
+  --border-radius: 10px;
+  height: 40px !important;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/*ion-button, .button1 {
+  background: #CFE5CF !important; 
+  color: #2A2A2A !important;   
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 30px !important;
+  padding: 12px 20px !important;
+  text-transform: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important; 
+  border: none !important;
+}*/
+
+/*.button1:hover, ion-button:hover {
+  background: #388E3C !important; 
+}*/
+
+/* 📦 Tarjetas de productos bien alineadas */
+.product-card {
+  background: white;
+  border-radius: 15px !important;
+  padding: 15px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 📌 Ajustar imágenes de productos */
+.product-card img {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* 📢 Texto dentro de las tarjetas */
+.product-title {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.product-price {
+  font-size: 1rem;
+  color: var(--ion-color-success);
+  font-weight: bold;
+}
+
+/* ❤️ Ícono de ME GUSTA en la esquina superior derecha */
+.heart-icon {
+  color: #F1A131;
+  font-size: 24px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.heart-icon:hover {
+  transform: scale(1.2);
+}
+
+/* 📱 Responsive */
+@media (min-width: 768px) {
+  .product-card {
+    max-width: 200px;
+  }
+}
+
+/* 🟢 Botón Verde (Agregar) */
+.btn-green {
+  background: #CFE5CF !important; /* Fondo verde claro */
+  color: #2A2A2A !important; /* Texto oscuro */
+  font-weight: bold;
+  --padding-start: 5px !important;
+  --padding-end: 5px !important;
+  --padding-top: 4px !important;
+  --padding-bottom: 4px !important;
+  --border-radius: 10px !important;
+  --color: white !important;
+  font-size: 16px !important; /* Reduce el tamaño del texto e íconos */
+  height: 32px !important; /* Reduce la altura del botón */
+  min-width: 32px !important; /* Asegura que no sean demasiado anchos */
+}
+.small-btn ion-icon {
+  font-size: 18px !important;
+}
+.btn-greenstr {
+  --background: #4CAF50 !important; /* Color verde correcto */
+  --color: white !important; /* Texto en blanco */
+  --border-radius: 20px !important; /* Bordes redondeados */
+  --box-shadow: none !important; /* ❌ Elimina sombras extras */
+  --padding-start: 10px !important;
+  --padding-end: 10px !important;
+  --padding-top: 8px !important;
+  --padding-bottom: 8px !important;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: none !important;
+}
+
+
+/* 🟥 Botón Rojo (Realizar compra, Agregar a carrito) */
+.btn-red {
+  background: #D32F2F !important; /* Rojo */
+  color: white !important;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 30px !important;
+  padding: 12px 20px !important;
+  text-transform: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 🟡 Botón Amarillo (Quitar producto) */
+.btn-yellow {
+  background: #FBC02D !important;
+  color: white !important;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 30px !important;
+  padding: 12px 20px !important;
+  text-transform: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ✅ Evitar que los botones se encimen */
+.product-card ion-button {
+  width: 100% !important;
+  margin-top: 10px !important;
+  display: flex;
+}
+
+/* ✅ Asegurar que los íconos sean oscuros */
+.btn-green ion-icon {
+  color: #2A2A2A !important;
+}
+
+.btn-red ion-icon,
+.btn-yellow ion-icon {
+  color: white !important;
+}
+
+.product-card img {
+  width: 100%;
+  height: 150px; /* Ajusta el alto de la imagen */
+  object-fit: cover; /* Evita deformaciones */
+  border-radius: 10px;
+}
+.product-grid {
+  justify-content: center !important; /* Centra las tarjetas */
+
+}
+
+
+/*-------------Formularios---------------*/
+
+
+/* Contenedor principal del formulario */
+
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  background-color: #CFE5CF;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+
+/* --- Logo de Fruticia --- */
+.logo {
+  width: 150px;  /* Tamaño más pequeño */
+  height: auto;
+  margin-bottom: 10px;
+}
+
+/* --- Estilos generales para los inputs --- */
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* --- Efecto al enfocar los inputs --- */
+input:focus, select:focus {
+  border-color: #66bb6a;
+  outline: none;
+  box-shadow: 0 0 5px rgba(102, 187, 106, 0.5);
+}
+
+/* --- Botones generales --- */
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* --- Estilos para botones de redes sociales --- */
+.social-login {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.social-login button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  margin: 5px 0;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.social-login .facebook {
+  background-color: #1877f2;
+  color: white;
+}
+
+.social-login .google {
+  background-color: #db4437;
+  color: white;
+}
+
+.social-login button:hover {
+  opacity: 0.9;
+}
+
+/* --- Enlace de iniciar sesión --- */
+.login-link {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #e74c3c;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+/* --- 🔽 RESPONSIVE DESIGN 🔽 --- */
+@media (min-width: 768px) {
+  .form-wrapper {
+      max-width: 450px;
+      padding: 30px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .form-wrapper {
+      max-width: 500px;
+  }
+
+}
+
+@media (min-width: 1280px) {
+  .form-wrapper {
+      max-width: 600px;
+  }
+
+ 
+}

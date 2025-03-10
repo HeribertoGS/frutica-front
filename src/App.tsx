@@ -32,6 +32,9 @@ import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import './global.css';
+import Prueba from './pages/Prueba/Prueba';
+import RegisterForm from './pages/LoginPrueba/LoginPrueba';
 
 setupIonicReact();
 
@@ -45,6 +48,13 @@ const App: React.FC = () => (
         <Route exact path="/">
           <Redirect to="/home" />
         </Route>
+    {/* Ruta a la página de prueba */}
+    <Route path="/prueba-frutas" component={Prueba} exact />
+    <Route path="/registro-user" component={RegisterForm} exact />
+
+        {/* Redirigir a otra ruta si la URL no coincide */}
+        <Redirect exact from="/" to="/prueba-frutas" />
+
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>
