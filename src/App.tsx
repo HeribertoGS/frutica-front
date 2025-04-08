@@ -1,7 +1,6 @@
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import Home from './pages/Home';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -33,8 +32,15 @@ import '@ionic/react/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 import './global.css';
-import Prueba from './pages/Prueba/Prueba';
-import RegisterForm from './pages/LoginPrueba/LoginPrueba';
+import Fruta from './pages/Fruta/Fruta';
+import Register from './pages/Register/Register';
+import Producto from './pages/Producto/ProductoDetalle';
+import Perfil from './pages/Perfil/Perfil';
+import Carrito from './pages/Carrito/Carrito';
+import ListaDeseos from './pages/ListaDeseos/ListaDeseos';
+import Direcciones from './pages/Direcciones/Direcciones';
+
+
 
 setupIonicReact();
 
@@ -42,18 +48,33 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-    {/* Ruta a la página de prueba */}
-    <Route path="/prueba-frutas" component={Prueba} exact />
-    <Route path="/registro-user" component={RegisterForm} exact />
+        {/* Ruta a la página */}
+        <Route path="/fruta" component={Fruta} exact />
+        <Route path="/registro" component={Register} exact />
 
         {/* Redirigir a otra ruta si la URL no coincide */}
-        <Redirect exact from="/" to="/prueba-frutas" />
+        <Redirect exact from="/" to="/fruta" />
+
+        {/*ruta a producto detalle*/}
+        <Route path="/producto" component={Producto} exact />
+        <Redirect exact from="/" to="/producto" />
+
+        {/*ruta a perfil*/}
+        <Route path="/perfil" component={Perfil} exact />
+        <Redirect exact from="/" to="/perfil" />
+
+        {/*ruta a carrito*/}
+        <Route path="/carrito" component={Carrito} exact />
+        <Redirect exact from="/" to="/carrito" />
+
+        {/*ruta a Lista de Deseos*/}
+        <Route path="/LDeseos" component={ListaDeseos} exact />
+        <Redirect exact from="/" to="/LDeseos" />
+
+        {/*ruta a Direcciones */}
+        <Route path="/direcciones" component={Direcciones} exact />
+        <Redirect exact from="/" to="/direcciones" />
+
 
       </IonRouterOutlet>
     </IonReactRouter>

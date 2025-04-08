@@ -1,0 +1,123 @@
+/* === CONTENEDOR GENERAL === */
+.direcciones-wrapper {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* === TÍTULO DE SECCIÓN === */
+.titulo-direcciones {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 16px 0;
+    color: #222;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* === TARJETA "AGREGAR DIRECCIÓN" === */
+.card-agregar-direccion {
+    background-color: #dceedd;
+    border-radius: 16px;
+    padding: 32px 16px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+}
+
+.card-agregar-direccion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
+}
+
+.icono-agregar {
+    font-size: 42px;
+    color: #4caf50;
+    margin-bottom: 12px;
+}
+
+.texto-agregar {
+    font-weight: 600;
+    color: #444;
+    font-size: 16px;
+}
+
+/* === TARJETAS DE DIRECCIÓN === */
+.direccion-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    transition: transform 0.2s;
+}
+
+.direccion-card:hover {
+    transform: scale(1.01);
+}
+
+.direccion-card.predeterminada {
+    border: 2px solid #4caf50;
+}
+
+.direccion-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.telefono {
+    color: #999;
+    font-weight: 400;
+}
+
+.direccion-texto {
+    font-size: 14px;
+    color: #444;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.direccion-card .icono-ubicacion {
+    color: #f44336;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+/* === BOTONES DE ACCIÓN === */
+.botones-direccion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: flex-start;
+}
+
+/* Botones con color sólido */
+.botones-direccion ion-button {
+    --border-radius: 8px;
+    font-size: 14px;
+}
+
+/* === GRID RESPONSIVO === */
+.grid-direcciones {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .grid-direcciones {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

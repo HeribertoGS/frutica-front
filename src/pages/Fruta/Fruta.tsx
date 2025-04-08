@@ -1,21 +1,7 @@
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonContent,
-  IonSearchbar,
-  IonButton,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonIcon,
-} from "@ionic/react";
+import { IonPage, IonHeader, IonToolbar, IonContent,  IonSearchbar, IonButton, IonCard, IonCardHeader, IonCardTitle,  IonCardContent, IonGrid, IonRow, IonCol,  IonIcon,} from "@ionic/react";
 import { menuOutline, heartOutline, arrowBackOutline, addOutline } from "ionicons/icons";
-import "./Prueba.css"; // Solo para pequeños ajustes
+import '../../global.css';
+import FruticaLayout from "../../components/Layout/FruticaLayout";
 
 const productos = [
   { id: 1, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
@@ -36,17 +22,18 @@ const productos = [
   { id: 6, nombre: "Manzana", precio: 60, imagen: "https://libera.pe/wp-content/uploads/2021/12/razonescomermanzana-int-1080x650.jpg" },
 ];
 
-const PruebaFrutas: React.FC = () => {
+const Fruta: React.FC = () => {
   return (
+    <FruticaLayout>
     <IonPage>
-      {/* 🟢 Barra superior bien alineada */}
+      {/* barra superior bien alineada */}
       <IonHeader>
         <IonToolbar className="ion-toolbar"> 
           <IonButton slot="start" fill="clear" className="btn-green">
             <IonIcon icon={menuOutline} size="large" />
           </IonButton>
 
-          {/* 🟡 Barra de búsqueda centrada */}
+          {/* Barra de búsqueda centrada */}
           <div className="search-container">
             <IonSearchbar placeholder="Buscar frutas o verduras"></IonSearchbar>
           </div>
@@ -57,15 +44,15 @@ const PruebaFrutas: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      {/* 🍏 Contenido */}
+      {/*Contenido */}
       <IonContent fullscreen className="content">
         <h2>Frutas</h2>
-        <IonGrid>
-        <IonRow className="product-grid">
+        <IonGrid >
+        <IonRow className="product-grid" >
             {productos.map((producto) => (
               <IonCol size="12" size-md="4" size-lg="auto" key={producto.id}>
-              <IonCard className="product-card">
-                  {/* 🖼️ Imagen del Producto */}
+              <IonCard className="product-card" routerLink="/producto" >
+                  {/*Imagen del Producto */}
                   <img src={producto.imagen} alt={producto.nombre} className="product-img" />
 
                   <IonCardHeader className="product-info">
@@ -86,7 +73,10 @@ const PruebaFrutas: React.FC = () => {
         </IonGrid>
       </IonContent>
     </IonPage>
+
+
+</FruticaLayout>
   );
 };
 
-export default PruebaFrutas;
+export default Fruta;
