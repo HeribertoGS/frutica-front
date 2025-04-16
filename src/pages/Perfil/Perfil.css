@@ -1,6 +1,7 @@
 /* === CONTENEDOR GENERAL === */
 .perfil-container {
-    padding-top: 72px; /* Ajusta este valor según la altura real de tu header */
+    padding-top: 72px;
+    /* Ajusta este valor según la altura real de tu header */
     padding-bottom: 24px;
     background-color: #f5f5f5;
     /*min-height: 100vh;
@@ -121,14 +122,21 @@
     margin-top: 16px;
 }
 
+ion-modal.custom-modal::part(content) {
+    background: white !important;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
 /* === MODAL FLOTANTE === */
-.custom-modal {
+ion-modal.custom-modal {
     --width: 90%;
     --max-width: 400px;
     --height: auto;
     --border-radius: 20px;
     --background: white;
-    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    --backdrop-opacity: 0.3;
+    backdrop-filter: none;
 }
 
 .modal-content {
@@ -136,4 +144,6 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    background-color: white;
+    /*asegúrate también aquí */
 }

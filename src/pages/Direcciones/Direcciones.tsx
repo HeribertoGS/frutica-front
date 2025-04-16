@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { IonButton, IonCard, IonCardContent, IonContent, IonIcon, IonModal, } from '@ionic/react';
-import { addCircleOutline, checkmarkCircleOutline, createOutline, locationOutline, trashOutline, } from 'ionicons/icons';
+import {IonButton, IonCard, IonCardContent, IonContent,IonIcon,  IonModal} from '@ionic/react';
+import {addCircleOutline, checkmarkCircleOutline, createOutline, locationOutline,trashOutline,} from 'ionicons/icons';
 import './Direcciones.css';
 import FruticaLayout from '../../components/Layout/FruticaLayout';
 import DireccionForm, { Direccion } from '../../components/DireccionForm/DireccionForm';
-//import DireccionMapa from '../../components/DireccionMapa/DireccionMapa';
+import DireccionMapa from '../../components/DireccionMapa/DireccionMapa';
 
 type DireccionConCoord = Direccion & {
     id: number;
@@ -24,13 +24,9 @@ const Direcciones: React.FC = () => {
     const [direcciones, setDirecciones] = useState<DireccionConCoord[]>([]);
     const [mostrarMapa, setMostrarMapa] = useState(false);
 
-    const marcarComoActual = (id: number) => {
-        setDireccionActual(id);
-    };
-
-    const eliminarDireccion = (id: number) => {
+    const marcarComoActual = (id: number) => setDireccionActual(id);
+    const eliminarDireccion = (id: number) =>
         setDirecciones((prev) => prev.filter((d) => d.id !== id));
-    };
 
     const abrirModalCrear = () => {
         setModoFormulario('crear');
@@ -119,47 +115,37 @@ const Direcciones: React.FC = () => {
                                 id,
                                 nombre: 'Nombre demo',
                                 apellido: 'Apellido demo',
-                                telefono: '0000000000',
+                                telefono: direccionNueva.telefono,
                             };
 
-                            if (modoFormulario === 'crear') {
-                                setDirecciones((prev) => [...prev, direccionCompleta]);
-                            } else {
-                                setDirecciones((prev) =>
-                                    prev.map((d) => (d.id === direccionCompleta.id ? direccionCompleta : d))
-                                );
-                            }
-
+                            setDireccionTemp(direccionCompleta);
                             setMostrarFormulario(false);
-                            setDireccionAEditar(null);
-
+                            setMostrarMapa(true);
                         }}
                     />
                 </div>
             </IonModal>
 
-            {/* Modal con mapa */}
-            {/*<IonModal isOpen={mostrarMapa} onDidDismiss={() => setMostrarMapa(false)}>
-                {direccionTemp && (
-                    <DireccionMapa
-                        onCancelar={() => setMostrarMapa(false)}
-                        onGuardar={({ lat, lng }) => {
-                            const direccionFinal = { ...direccionTemp, lat, lng };
-
-                            if (modoFormulario === 'crear') {
-                                setDirecciones((prev) => [...prev, direccionFinal]);
-                            } else {
-                                setDirecciones((prev) =>
-                                    prev.map((d) => (d.id === direccionFinal.id ? direccionFinal : d))
-                                );
-                            }
-
-                            setDireccionTemp(null);
-                            setMostrarMapa(false);
-                        }}
-                    />
-                )}
-            </IonModal>*/}
+            {/* Modal de mapa */}
+            {direccionTemp && (
+                <DireccionMapa
+                    isOpen={mostrarMapa}
+                    direccion={direccionTemp}
+                    onClose={() => setMostrarMapa(false)}
+                    onSelectLocation={({ lat, lng }) => {
+                        const direccionFinal = { ...direccionTemp, lat, lng };
+                        if (modoFormulario === 'crear') {
+                            setDirecciones((prev) => [...prev, direccionFinal]);
+                        } else {
+                            setDirecciones((prev) =>
+                                prev.map((d) => (d.id === direccionFinal.id ? direccionFinal : d))
+                            );
+                        }
+                        setMostrarMapa(false);
+                        setDireccionTemp(null);
+                    }}
+                />
+            )}
         </FruticaLayout>
     );
 };

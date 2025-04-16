@@ -42,6 +42,7 @@ import Direcciones from './pages/Direcciones/Direcciones';
 
 
 
+
 setupIonicReact();
 
 const App: React.FC = () => (
@@ -74,6 +75,10 @@ const App: React.FC = () => (
         {/*ruta a Direcciones */}
         <Route path="/direcciones" component={Direcciones} exact />
         <Redirect exact from="/" to="/direcciones" />
+
+        {/*ruta a registro */}
+        <Route path="/loggin" component={Register} exact />
+        <Redirect exact from="/" to="/loggin" />
 
 
       </IonRouterOutlet>

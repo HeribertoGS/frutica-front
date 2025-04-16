@@ -13,7 +13,7 @@ const FruticaDesktopHeader: React.FC = () => {
 
         {/* LOGO */}
         <div className="left-section">
-          <IonRouterLink routerLink="/home" className="bottom-link">
+          <IonRouterLink routerLink="/fruta" className="bottom-link">
             <img src="/src/assets/img/fruticaletras.png" alt="Frutica" className="logo" />
           </IonRouterLink>
         </div>

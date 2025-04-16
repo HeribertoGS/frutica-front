@@ -1,34 +1,114 @@
-body {
-    background-color: #CFE5CF;
-    font-family: 'OpenSans', sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-
+/* Estilo general del contenedor */
 .main-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;  /* Hace que el contenedor ocupe toda la pantalla */
-    width: 100%;  /* Asegura que se expanda en toda la pantalla */
-    padding: 20px;
-  }
-  
-  /* Ajustar separación entre elementos */
-input, select, button {
-    margin-bottom: 12px; /* Mayor separación */
+  background-color: #ebfaec;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Ajustar el padding en los botones */
-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px; /* Espacio entre el icono y el texto */
+/* Formulario centrado */
+.form-wrapper {
+  background: rgb(221, 249, 221);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+  box-sizing: border-box;
 }
 
-/* Iconos en los botones */
-button .icon {
-    font-size: 20px;
+/* Logo (ahora más grande) */
+.logo {
+  display: block;
+  margin: 0 auto 1.5rem auto;
+  height: 100px; /* antes estaba en 80px */
 }
 
+/* Inputs y selects */
+input, select {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ccc !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+  outline: none !important;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+
+  background-color: #e6f8dd; /* igual que inputs */
+  color: #000;
+}
+
+/* Al enfocar sigue gris, sin contorno de color */
+input:focus, select:focus {
+  border-color: #ccc;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Botón de crear cuenta */
+.button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Botón de Google */
+.google {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #db4437;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Link de login */
+.login-link {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.login-link a {
+  color: #e53935;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+/* Errores */
+.error {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: -0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+
+input::placeholder,
+select::placeholder,
+textarea::placeholder {
+  color: #000 !important;
+  opacity: 1; /* Asegura que no se vea desvanecido */
+}

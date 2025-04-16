@@ -1,77 +1,79 @@
-/*import React, { useEffect, useRef, useState } from 'react';
-import { IonButton } from '@ionic/react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import './DireccionMapa.css';
-import { LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
-import L from 'leaflet';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import { LeafletEvent } from 'leaflet';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
+import { IonModal, IonButton } from '@ionic/react';
+import React, { useState, useCallback } from 'react';
 
-// Icono del marcador
-const icon = new L.Icon({
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-});
+const containerStyle = {
+    width: '100%',
+    height: '400px',
+};
+
+const defaultCenter = {
+    lat: 17.06,
+    lng: -96.72,
+};
 
 interface Props {
-    onGuardar: (coords: { lat: number; lng: number }) => void;
-    onCancelar: () => void;
+    isOpen: boolean;
+    onClose: () => void;
+    onSelectLocation: (coords: { lat: number; lng: number }) => void;
+    direccion?: {
+        lat?: number;
+        lng?: number;
+    };
 }
 
-const DireccionMapa: React.FC<Props> = ({ onGuardar, onCancelar }) => {
-    const [coordenadas, setCoordenadas] = useState({ lat: 17.06, lng: -96.72 });
-    const mapRef = useRef<LeafletMap | null>(null);
+const DireccionMapa: React.FC<Props> = ({ isOpen, onClose, onSelectLocation, direccion }) => {
+    const { isLoaded } = useLoadScript({
+        googleMapsApiKey: 'AIzaSyCcjNFR6pTiqE5FkWlAF3-FFcFVSOqCXtE',
+    });
 
-    // Forzar redibujado del mapa cuando se monta
-    useEffect(() => {
-        setTimeout(() => {
-            if (mapRef.current) {
-                mapRef.current.invalidateSize();
-            }
-        }, 300);
+    const [position, setPosition] = useState<{ lat: number; lng: number }>(
+        direccion?.lat !== undefined && direccion?.lng !== undefined
+            ? { lat: direccion.lat, lng: direccion.lng }
+            : defaultCenter
+    );
+
+    const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+        if (e.latLng) {
+            setPosition({
+                lat: e.latLng.lat(),
+                lng: e.latLng.lng(),
+            });
+        }
     }, []);
 
-    const ClickMapHandler = () => {
-        useMapEvents({
-            click(e: LeafletMouseEvent) {
-                setCoordenadas(e.latlng);
-            }
-        });
-        return null;
-    };
+    if (!isLoaded) return <div style={{ padding: '16px' }}>Cargando mapa...</div>;
 
     return (
-        <div className="mapa-container">
-            <h2>Agregar dirección exacta</h2>
+        <IonModal isOpen={isOpen} onDidDismiss={onClose}>
+            <div style={{ padding: '16px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <h2>Selecciona tu ubicación exacta</h2>
 
-            <MapContainer
-                center={[coordenadas.lat, coordenadas.lng]}
-                zoom={15}
-                scrollWheelZoom={false}
-                className="mapa-leaflet"
-                whenReady={(event) => {
-                    mapRef.current = event.target;
-                  }}>
-                <ClickMapHandler />
-                <TileLayer
-                    attribution='&copy; OpenStreetMap'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={[coordenadas.lat, coordenadas.lng]} icon={icon} />
-            </MapContainer>
+                <div style={{ flex: 1 }}>
+                    <GoogleMap
+                        mapContainerStyle={containerStyle}
+                        center={position}
+                        zoom={15}
+                        onClick={handleMapClick}
+                    >
+                        {/* Renderiza solo si lat/lng son válidos */}
+                        {position.lat !== undefined && position.lng !== undefined && (
+                            <Marker position={{ lat: position.lat, lng: position.lng }} />
+                        )}
+                    </GoogleMap>
+                </div>
 
-            <IonButton expand="block" color="success" onClick={() => onGuardar(coordenadas)}>
-                Guardar
-            </IonButton>
-            <IonButton expand="block" color="warning" onClick={onCancelar}>
-                Volver
-            </IonButton>
-        </div>
+                <div style={{ marginTop: '16px' }}>
+                    <IonButton expand="block" color="success" onClick={() => onSelectLocation(position)}>
+                        Usar esta ubicación
+                    </IonButton>
+                    <IonButton expand="block" color="medium" onClick={onClose}>
+                        Cancelar
+                    </IonButton>
+                </div>
+            </div>
+        </IonModal>
     );
 };
 
-export default DireccionMapa;*/
+export default DireccionMapa;

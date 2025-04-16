@@ -1,7 +1,8 @@
-import { IonPage, IonHeader, IonToolbar, IonContent,  IonSearchbar, IonButton, IonCard, IonCardHeader, IonCardTitle,  IonCardContent, IonGrid, IonRow, IonCol,  IonIcon,} from "@ionic/react";
-import { menuOutline, heartOutline, arrowBackOutline, addOutline } from "ionicons/icons";
+import { IonPage, IonHeader, IonToolbar, IonContent, IonSearchbar, IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol, IonIcon, useIonToast, } from "@ionic/react";
+import { menuOutline, heartOutline, arrowBackOutline, addOutline, heart } from "ionicons/icons";
 import '../../global.css';
 import FruticaLayout from "../../components/Layout/FruticaLayout";
+import { useWishlist } from "../../contexts/WishlistContext";
 
 const productos = [
   { id: 1, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
@@ -23,48 +24,63 @@ const productos = [
 ];
 
 const Fruta: React.FC = () => {
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const [present] = useIonToast();
+
+  const handleClickHeart = (producto: any) => {
+    toggleWishlist(producto);
+    present({
+      message: isInWishlist(producto.id)
+        ? `${producto.nombre} eliminado de la lista de deseos`
+        : `${producto.nombre} agregado a la lista de deseos`,
+      duration: 1500,
+      color: "medium",
+    });
+  };
+
   return (
     <FruticaLayout>
-    <IonPage>
-      {/* barra superior bien alineada */}
-      <IonHeader>
-        <IonToolbar className="ion-toolbar"> 
-          <IonButton slot="start" fill="clear" className="btn-green">
-            <IonIcon icon={menuOutline} size="large" />
-          </IonButton>
+      <IonContent className="content">
+        <h2 style={{ textAlign: "center", fontWeight: "bold" }}>Frutas</h2>
 
-          {/* Barra de búsqueda centrada */}
-          <div className="search-container">
-            <IonSearchbar placeholder="Buscar frutas o verduras"></IonSearchbar>
-          </div>
-
-          <IonButton slot="end" fill="clear" className="btn-green">
-            <IonIcon icon={arrowBackOutline} size="large" />
-          </IonButton>
-        </IonToolbar>
-      </IonHeader>
-
-      {/*Contenido */}
-      <IonContent fullscreen className="content">
-        <h2>Frutas</h2>
-        <IonGrid >
-        <IonRow className="product-grid" >
-            {productos.map((producto) => (
-              <IonCol size="12" size-md="4" size-lg="auto" key={producto.id}>
-              <IonCard className="product-card" routerLink="/producto" >
-                  {/*Imagen del Producto */}
-                  <img src={producto.imagen} alt={producto.nombre} className="product-img" />
+        <IonGrid>
+          <IonRow className="product-grid">
+            {productos.map((producto, index) => (
+              <IonCol key={index} size="12" size-md="4" size-lg="auto">
+                <IonCard className="product-card" routerLink="/producto">
+                  <img
+                    src={producto.imagen}
+                    alt={producto.nombre}
+                    className="product-img"
+                  />
 
                   <IonCardHeader className="product-info">
-                    <IonCardTitle className="product-title">{producto.nombre}</IonCardTitle>
-                    <IonIcon icon={heartOutline} className="heart-icon" />
+                    <div className="title-heart">
+                      <IonCardTitle className="product-title">{producto.nombre}</IonCardTitle>
+                      <IonIcon
+                        icon={isInWishlist(producto.id) ? heart : heartOutline}
+                        className="heart-icon"
+                        style={{
+                          color: isInWishlist(producto.id) ? "#FFB347"  : "orange",
+                          fontSize: "18px",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleClickHeart(producto);
+                        }}
+                      />
+                    </div>
                     <p className="product-price">${producto.precio}.00 kg</p>
                   </IonCardHeader>
+
+
                   <IonCardContent>
-                  <IonButton className="btn-greenstr">
-                  <IonIcon icon={addOutline} slot="start" />
-                    Agregar
-                  </IonButton>
+                    <IonButton className="btn-greenstr" expand="block">
+                      <IonIcon icon={addOutline} slot="start" />
+                      Agregar
+                    </IonButton>
                   </IonCardContent>
                 </IonCard>
               </IonCol>
@@ -72,10 +88,7 @@ const Fruta: React.FC = () => {
           </IonRow>
         </IonGrid>
       </IonContent>
-    </IonPage>
-
-
-</FruticaLayout>
+    </FruticaLayout>
   );
 };
 

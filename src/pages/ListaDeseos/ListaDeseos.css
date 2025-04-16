@@ -2,16 +2,27 @@
     font-size: 24px;
     float: right;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-in-out;
+    color: orange;
 }
 
 .heart-icon.active {
-    color: yellow;
+    color: #FFB347;
+    /* naranja pastel */
+    animation: pop 0.3s ease-in-out;
 }
 
-.heart-icon.removed {
-    color: transparent;
-    border: 2px solid yellow;
-    border-radius: 50%;
-    padding: 2px;
+@keyframes pop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.4);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
+
