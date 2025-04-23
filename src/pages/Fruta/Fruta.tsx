@@ -1,31 +1,26 @@
-import { IonPage, IonHeader, IonToolbar, IonContent, IonSearchbar, IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol, IonIcon, useIonToast, } from "@ionic/react";
-import { menuOutline, heartOutline, arrowBackOutline, addOutline, heart } from "ionicons/icons";
-import '../../global.css';
+import { IonContent, IonGrid, IonRow, IonCol, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, useIonToast, IonCard, } from "@ionic/react";
+import { heartOutline, heart, addOutline, removeOutline } from "ionicons/icons";
+import "../../pages/Fruta/fruta.css";
 import FruticaLayout from "../../components/Layout/FruticaLayout";
 import { useWishlist } from "../../contexts/WishlistContext";
+import { useCarrito } from "../../contexts/carritoContext";
+import { useHistory } from 'react-router-dom';
+
 
 const productos = [
   { id: 1, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
   { id: 2, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
-  { id: 3, nombre: "Peras", precio: 60, imagen: "https://www.saborusa.com/cr/wp-content/uploads/sites/14/2023/12/propiedades-de-la-pera-salud-belleza.jpg" },
-  { id: 4, nombre: "Mandarina", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxwctBQcBp0VZ4S9eZ8CKw9e9zQXw-47a0pQ&s" },
-  { id: 5, nombre: "Uvas", precio: 60, imagen: "https://cdn.unotv.com/images/2024/12/uvas-rojas-o-verdes-jpg-133446-1024x576.jpg" },
-  { id: 6, nombre: "Manzana", precio: 60, imagen: "https://libera.pe/wp-content/uploads/2021/12/razonescomermanzana-int-1080x650.jpg" },
-  { id: 1, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
-  { id: 2, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
-  { id: 3, nombre: "Peras", precio: 60, imagen: "https://www.saborusa.com/cr/wp-content/uploads/sites/14/2023/12/propiedades-de-la-pera-salud-belleza.jpg" },
-  { id: 4, nombre: "Mandarina", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxwctBQcBp0VZ4S9eZ8CKw9e9zQXw-47a0pQ&s" },
-  { id: 5, nombre: "Uvas", precio: 60, imagen: "https://cdn.unotv.com/images/2024/12/uvas-rojas-o-verdes-jpg-133446-1024x576.jpg" },
-  { id: 6, nombre: "Manzana", precio: 60, imagen: "https://libera.pe/wp-content/uploads/2021/12/razonescomermanzana-int-1080x650.jpg" },
-  { id: 3, nombre: "Peras", precio: 60, imagen: "https://www.saborusa.com/cr/wp-content/uploads/sites/14/2023/12/propiedades-de-la-pera-salud-belleza.jpg" },
-  { id: 4, nombre: "Mandarina", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxwctBQcBp0VZ4S9eZ8CKw9e9zQXw-47a0pQ&s" },
-  { id: 5, nombre: "Uvas", precio: 60, imagen: "https://cdn.unotv.com/images/2024/12/uvas-rojas-o-verdes-jpg-133446-1024x576.jpg" },
-  { id: 6, nombre: "Manzana", precio: 60, imagen: "https://libera.pe/wp-content/uploads/2021/12/razonescomermanzana-int-1080x650.jpg" },
+  { id: 3, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
+  { id: 4, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
+  { id: 5, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
+  { id: 6, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
+
 ];
 
 const Fruta: React.FC = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [present] = useIonToast();
+  const { carrito, agregarAlCarrito, actualizarCantidad } = useCarrito();
 
   const handleClickHeart = (producto: any) => {
     toggleWishlist(producto);
@@ -38,33 +33,50 @@ const Fruta: React.FC = () => {
     });
   };
 
+  const handleAgregar = (producto: any) => {
+    agregarAlCarrito({ ...producto, cantidad: 1 });
+  };
+
+  const aumentar = (id: number) => {
+    const actual = carrito.find(p => p.id === id)?.cantidad || 1;
+    actualizarCantidad(id, actual + 1);
+  };
+
+  const disminuir = (id: number) => {
+    const actual = carrito.find(p => p.id === id)?.cantidad || 1;
+    if (actual > 1) {
+      actualizarCantidad(id, actual - 1);
+    }
+  };
+
+  const history = useHistory();
+  const irADetalle = () => {
+    history.push('/producto');
+  };
+
+
   return (
     <FruticaLayout>
-      <IonContent className="content">
-        <h2 style={{ textAlign: "center", fontWeight: "bold" }}>Frutas</h2>
-
+      <IonContent className="ion-padding">
+        <h2 className="fruta-titulo-principal">Frutas</h2>
         <IonGrid>
-          <IonRow className="product-grid">
-            {productos.map((producto, index) => (
-              <IonCol key={index} size="12" size-md="4" size-lg="auto">
-                <IonCard className="product-card" routerLink="/producto">
-                  <img
-                    src={producto.imagen}
-                    alt={producto.nombre}
-                    className="product-img"
-                  />
+          <IonRow className="fruta-product-grid">
+            {productos.map((producto) => (
+              <IonCol key={producto.id} size="12" size-sm="6" size-md="4" size-lg="2">
+                <IonCard className="fruta-product-card" >
+                  <img src={producto.imagen} alt={producto.nombre} className="fruta-product-img" onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    irADetalle();
+                  }} />
 
-                  <IonCardHeader className="product-info">
-                    <div className="title-heart">
-                      <IonCardTitle className="product-title">{producto.nombre}</IonCardTitle>
+                  <IonCardHeader className="fruta-product-info">
+                    <div className="fruta-title-heart">
+                      <IonCardTitle className="fruta-product-title">{producto.nombre}</IonCardTitle>
                       <IonIcon
                         icon={isInWishlist(producto.id) ? heart : heartOutline}
-                        className="heart-icon"
-                        style={{
-                          color: isInWishlist(producto.id) ? "#FFB347"  : "orange",
-                          fontSize: "18px",
-                          cursor: "pointer",
-                        }}
+                        className="fruta-heart-icon"
+                        style={{ color: isInWishlist(producto.id) ? "#FFB347" : "orange" }}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -72,15 +84,28 @@ const Fruta: React.FC = () => {
                         }}
                       />
                     </div>
-                    <p className="product-price">${producto.precio}.00 kg</p>
+                    <p className="fruta-product-price">${producto.precio}.00 kg</p>
                   </IonCardHeader>
 
-
                   <IonCardContent>
-                    <IonButton className="btn-greenstr" expand="block">
-                      <IonIcon icon={addOutline} slot="start" />
-                      Agregar
-                    </IonButton>
+                    {carrito.find((p) => p.id === producto.id) ? (
+
+                      <div className="fruta-controles">
+                        <IonButton size="small" fill="solid" onClick={() => disminuir(producto.id)} className="fruta-boton-contador">
+                          <IonIcon icon={removeOutline} />
+                        </IonButton>
+                        <span className="fruta-cantidad">{carrito.find(p => p.id === producto.id)?.cantidad || 1}</span>
+
+                        <IonButton size="small" fill="solid" onClick={() => aumentar(producto.id)} className="fruta-boton-contador">
+                          <IonIcon icon={addOutline} />
+                        </IonButton>
+                      </div>
+                    ) : (
+                      <IonButton className="fruta-btn-agregar" expand="block" onClick={() => agregarAlCarrito({ id: producto.id, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen, cantidad: 1 })}>
+                        <IonIcon icon={addOutline} slot="start" />
+                        Agregar
+                      </IonButton>
+                    )}
                   </IonCardContent>
                 </IonCard>
               </IonCol>

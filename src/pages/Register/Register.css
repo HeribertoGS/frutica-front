@@ -21,8 +21,12 @@
 /* Logo (ahora más grande) */
 .logo {
   display: block;
-  margin: 0 auto 1.5rem auto;
-  height: 100px; /* antes estaba en 80px */
+  margin: 0 auto 2rem auto;
+  height: 120px !important;
+  width: auto !important;
+  max-height: none !important;
+  max-width: 100% !important;
+  object-fit: contain;
 }
 
 /* Inputs y selects */
@@ -38,8 +42,24 @@ input, select {
   box-sizing: border-box;
   transition: border-color 0.3s ease;
 
-  background-color: #e6f8dd; /* igual que inputs */
-  color: #000;
+  background-color: white !important; /* ← CAMBIO CLAVE */
+  color: black !important;
+}
+select {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ccc !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+  outline: none !important;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+
+  background-color:#ddf9dd !important; /* ← clave */
+  color: black !important;
+  appearance: none; /* Opcional: elimina estilos nativos en navegadores */
 }
 
 /* Al enfocar sigue gris, sin contorno de color */
@@ -59,7 +79,6 @@ input:focus, select:focus {
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  background-color: #4CAF50;
   color: white;
 }
 

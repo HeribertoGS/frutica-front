@@ -1,13 +1,9 @@
 /* === CONTENEDOR GENERAL === */
 .perfil-container {
     padding-top: 72px;
-    /* Ajusta este valor según la altura real de tu header */
     padding-bottom: 24px;
     background-color: #f5f5f5;
-    /*min-height: 100vh;
-    box-sizing: border-box;*/
 }
-
 
 /* === TARJETA PRINCIPAL === */
 .ion-card {
@@ -39,7 +35,7 @@
     margin-bottom: 16px;
 }
 
-/* === LABELS MANUALES (por si los usas fuera de IonInput) === */
+/* === LABELS MANUALES === */
 .profile-section label {
     display: block;
     margin-top: 10px;
@@ -48,7 +44,7 @@
     color: #333;
 }
 
-/* === INPUTS NATIVOS PERSONALIZADOS (si los usas fuera de Ionic) === */
+/* === INPUTS NATIVOS PERSONALIZADOS === */
 .profile-section input {
     width: 100%;
     padding: 10px;
@@ -81,54 +77,13 @@
     gap: 6px;
 }
 
-/* === BOTONES GENERALES === */
-.btn-yellow {
-    background-color: #FBC02D;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: background-color 0.2s ease;
-}
-
-.btn-yellow:hover {
-    background-color: #f1b400;
-}
-
-.btn-green {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: background-color 0.2s ease;
-}
-
-.btn-green:hover {
-    background-color: #43a047;
-}
-
-/* === FILA DE BOTONES === */
-.button-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 16px;
-}
-
+/* === MODAL FLOTANTE === */
 ion-modal.custom-modal::part(content) {
     background: white !important;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* === MODAL FLOTANTE === */
 ion-modal.custom-modal {
     --width: 90%;
     --max-width: 400px;
@@ -145,5 +100,105 @@ ion-modal.custom-modal {
     flex-direction: column;
     gap: 16px;
     background-color: white;
-    /*asegúrate también aquí */
+}
+
+/* === MINI TARJETAS DE FACTURAS === */
+.factura-mini-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #f1f1f1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.factura-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.factura-info strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.factura-info small {
+    font-size: 11px;
+    color: #666;
+}
+
+.factura-actions ion-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    --background: transparent;
+    font-size: 18px;
+    color: #333;
+}
+
+.factura-actions ion-button:hover {
+    --background: #e0e0e0;
+    border-radius: 8px;
+}
+
+.factura-card-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.factura-mini-card {
+    background: #f3f3f3;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 300px;
+    max-width: 45%;
+    min-width: 260px;
+}
+
+.factura-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.factura-info strong {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+}
+
+.factura-info span {
+    font-size: 12px;
+    color: #777;
+}
+
+.factura-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 12px;
+}
+
+.factura-actions button {
+    background-color: #4CAF50;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+}
+
+.factura-actions button:hover {
+    background-color: #43a047;
 }

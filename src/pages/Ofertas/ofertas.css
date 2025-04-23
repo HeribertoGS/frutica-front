@@ -1,0 +1,98 @@
+/* === CONTENEDOR PRINCIPAL === */
+.ofertas-section {
+    padding: 20px;
+    background-color: #fff;
+}
+
+.ofertas-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* === GRID RESPONSIVO === */
+.ofertas-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    justify-items: center;
+}
+
+/* === CARD DE OFERTA === */
+.oferta-card-simple {
+    width: 180px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    transition: transform 0.2s ease;
+}
+
+.oferta-card-simple:hover {
+    transform: translateY(-3px);
+}
+
+/* === IMAGEN === */
+.oferta-img-simple {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* === INFORMACIÓN === */
+.oferta-info-simple {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.oferta-nombre-simple {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 2px;
+}
+
+.oferta-subinfo-simple {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 6px;
+}
+
+.oferta-precio-simple {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.oferta-descuento-simple {
+    font-size: 12px;
+    color: #2c9b8a;
+    background-color: #e0f4f1;
+    border-radius: 6px;
+    padding: 2px 6px;
+    margin-bottom: 4px;
+}
+
+.oferta-precio-bold {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+/* === BOTÓN === */
+.btn-oferta-add {
+    --border-radius: 8px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 4px;
+}

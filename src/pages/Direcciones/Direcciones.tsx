@@ -1,10 +1,32 @@
 import React, { useState } from 'react';
-import {IonButton, IonCard, IonCardContent, IonContent,IonIcon,  IonModal} from '@ionic/react';
-import {addCircleOutline, checkmarkCircleOutline, createOutline, locationOutline,trashOutline,} from 'ionicons/icons';
+import {
+    IonButton,
+    IonCard,
+    IonCardContent,
+    IonContent,
+    IonIcon,
+    IonModal
+} from '@ionic/react';
+import {
+    addCircleOutline,
+    checkmarkCircleOutline,
+    createOutline,
+    locationOutline,
+    trashOutline
+} from 'ionicons/icons';
 import './Direcciones.css';
 import FruticaLayout from '../../components/Layout/FruticaLayout';
 import DireccionForm, { Direccion } from '../../components/DireccionForm/DireccionForm';
 import DireccionMapa from '../../components/DireccionMapa/DireccionMapa';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+const customIcon = new L.Icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+});
 
 type DireccionConCoord = Direccion & {
     id: number;
@@ -42,11 +64,11 @@ const Direcciones: React.FC = () => {
 
     return (
         <FruticaLayout>
-            <h2 className="titulo-direcciones">Mis direcciones</h2>
-
             <IonContent className="ion-padding">
+                <h2 className="titulo-direcciones">Mis direcciones</h2>
                 <div className="grid-direcciones">
-                    {/* Agregar dirección */}
+
+                    {/* Agregar nueva dirección */}
                     <div className="item-direccion">
                         <div className="card-agregar-direccion" onClick={abrirModalCrear}>
                             <IonIcon icon={addCircleOutline} className="icono-agregar" />
@@ -63,15 +85,31 @@ const Direcciones: React.FC = () => {
                                         <strong>{direccion.nombre} {direccion.apellido}</strong>
                                         <span className="telefono">Teléfono: {direccion.telefono}</span>
                                     </div>
+
                                     <p className="direccion-texto">
                                         <IonIcon icon={locationOutline} className="icono-ubicacion" />
                                         {`${direccion.calle} ${direccion.numero}, ${direccion.colonia}, ${direccion.municipio}, ${direccion.estado}, CP ${direccion.codigoPostal}. Referencias: ${direccion.referencias}`}
                                     </p>
-                                    {direccion.lat !== undefined && direccion.lng !== undefined && (
-                                        <p className="direccion-coordenadas">
-                                            📍 Lat: {direccion.lat.toFixed(4)}, Lng: {direccion.lng.toFixed(4)}
-                                        </p>
+
+                                    {/* Mostrar mapa si hay coordenadas */}
+                                    {typeof direccion.lat === 'number' && typeof direccion.lng === 'number' && (
+                                        <div className="mapa-ubicacion">
+                                            <MapContainer
+                                                center={[direccion.lat, direccion.lng]}
+                                                zoom={15}
+                                                scrollWheelZoom={false}
+                                                style={{ height: '150px', width: '100%', borderRadius: '10px' }}
+                                            >
+                                                <TileLayer
+                                                    attribution='&copy; OpenStreetMap'
+                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                />
+                                                <Marker position={[direccion.lat, direccion.lng]} icon={customIcon} />
+                                            </MapContainer>
+                                        </div>
                                     )}
+
+                                    {/* Botones de acción */}
                                     <div className="botones-direccion">
                                         <IonButton color="danger" size="small" onClick={() => eliminarDireccion(direccion.id)}>
                                             <IonIcon icon={trashOutline} slot="start" />
@@ -84,7 +122,10 @@ const Direcciones: React.FC = () => {
                                         <IonButton
                                             color="success"
                                             size="small"
-                                            onClick={() => marcarComoActual(direccion.id)}
+                                            onClick={() => {
+                                                marcarComoActual(direccion.id);
+                                                localStorage.setItem('direccionPredeterminada', JSON.stringify(direccion));
+                                            }}
                                             fill={direccionActual === direccion.id ? 'solid' : 'outline'}
                                         >
                                             <IonIcon icon={checkmarkCircleOutline} slot="start" />
@@ -98,7 +139,7 @@ const Direcciones: React.FC = () => {
                 </div>
             </IonContent>
 
-            {/* Modal con formulario */}
+            {/* Modal formulario */}
             <IonModal isOpen={mostrarFormulario} onDidDismiss={() => setMostrarFormulario(false)}>
                 <div className="contenedor-modal">
                     <DireccionForm

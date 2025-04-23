@@ -2,15 +2,15 @@
 import React from 'react';
 import { IonPage, IonContent } from '@ionic/react';
 import FruticaNavbar from '../../components/Navbar/Navbar';
-import MandarinaCard from '../../components/productos/ProductoCard';
+import ProductoCard from '../../components/productos/ProductoCard';
 import FruticaLayout from '../../components/Layout/FruticaLayout';
 
-const ProductoDetalle: React.FC = () => {
+const productos: React.FC = () => {
     return (
         <FruticaLayout>
-            <MandarinaCard />
+            <ProductoCard />
         </FruticaLayout>
     );
 };
 
-export default ProductoDetalle;
+export default productos;

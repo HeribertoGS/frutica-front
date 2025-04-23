@@ -1,11 +1,33 @@
-import React from 'react';
-import '/src/global.css';
+import './navbar.css';
 import { IonRouterLink } from '@ionic/react';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import React, { useEffect, useState } from 'react';
+import { useCarrito } from '../../contexts/carritoContext';
+
 
 const FruticaDesktopHeader: React.FC = () => {
   const isMobile = useIsMobile();
+
+  const [codigoPostal, setCodigoPostal] = useState('00000'); // Valor por defecto
+  const { carrito } = useCarrito();
+  useEffect(() => {
+    const direccion = localStorage.getItem('direccionPredeterminada');
+    if (direccion) {
+      try {
+        const data = JSON.parse(direccion);
+        if (data.codigoPostal) {
+          setCodigoPostal(data.codigoPostal);
+        }
+      } catch (err) {
+        console.error('Error al leer dirección predeterminada:', err);
+      }
+    }
+  }, []);
   if (isMobile) return null;
+
+  const calcularTotal = () => {
+    return carrito.reduce((total, p) => total + (p.precio * p.cantidad), 0).toFixed(2);
+  };
 
   return (
     <div className="desktop-header">
@@ -14,7 +36,7 @@ const FruticaDesktopHeader: React.FC = () => {
         {/* LOGO */}
         <div className="left-section">
           <IonRouterLink routerLink="/fruta" className="bottom-link">
-            <img src="/src/assets/img/fruticaletras.png" alt="Frutica" className="logo" />
+            <img src="/src/assets/img/fruticaletras.png" alt="Frutica" className="logotexto" />
           </IonRouterLink>
         </div>
 
@@ -32,10 +54,9 @@ const FruticaDesktopHeader: React.FC = () => {
 
         {/* ICONOS DERECHA */}
         <div className="right-section">
-
           <div className="envio">
-            <span className="envio-label">Envío gratis en</span>
-            <span className="envio-cp">CP 68000</span>
+            <span className="envio-label">Envío en</span>
+            <span className="envio-cp">CP {codigoPostal}</span>
             <span className="material-icons icon-white">place</span>
           </div>
 
@@ -43,7 +64,7 @@ const FruticaDesktopHeader: React.FC = () => {
             <div className="cart-summary">
               <span className="material-icons">shopping_cart</span>
               <div className="cart-info">
-                <strong>$0.0</strong>
+                <strong>${calcularTotal()}</strong>
                 <span>Ahorras -$0.0</span>
               </div>
             </div>

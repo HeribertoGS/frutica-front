@@ -1,148 +1,93 @@
-import { IonButton, IonCard, IonCardContent, IonContent, IonPage, IonImg } from '@ionic/react';
-import { IonIcon } from '@ionic/react';
+import {
+    IonButton,
+    IonIcon
+} from '@ionic/react';
 import { trashOutline, add, remove } from 'ionicons/icons';
-import FruticaLayout from '../../components/Layout/FruticaLayout';
-import './Carrito.css';
 import { useState } from 'react';
+import './Carrito.css';
+import FruticaLayout from '../../components/Layout/FruticaLayout';
+import { useCarrito } from '../../contexts/carritoContext';
+import { useHistory } from 'react-router-dom';
 
-const productos = [
-    {
-        nombre: 'Mandarina',
-        local: 'Frutica',
-        precioTotal: '$45.00/KG',
-        imagen: '/src/assets/img/durazno1.jpg',
-    },
-    {
-        nombre: 'Berenjena',
-        local: 'Frutica',
-        precioTotal: '$100.00/KG',
-        imagen: '/src/assets/img/durazno1.jpg',
-    },
-    {
-        nombre: 'Morron',
-        local: 'Frutica',
-        precioTotal: '$100.00/KG',
-        imagen: '/src/assets/img/pera.png',
-    },
-];
 
 const Carrito: React.FC = () => {
-    const [productos, setProductos] = useState([
-        {
-            nombre: 'Mandarina',
-            local: 'Frutica',
-            precioTotal: '$45.00/KG',
-            imagen: '/src/assets/img/durazno1.jpg',
-        },
-        {
-            nombre: 'Berenjena',
-            local: 'Frutica',
-            precioTotal: '$100.00/KG',
-            imagen: '/src/assets/img/durazno1.jpg',
-        },
-        {
-            nombre: 'Morron',
-            local: 'Frutica',
-            precioTotal: '$100.00/KG',
-            imagen: '/src/assets/img/pera.png',
-        },
-    ]);
+    const { carrito, eliminarDelCarrito, actualizarCantidad } = useCarrito();
 
-    const [cantidades, setCantidades] = useState<number[]>(productos.map(() => 1));
-
-    const aumentar = (i: number) => {
-        const nuevas = [...cantidades];
-        nuevas[i]++;
-        setCantidades(nuevas);
+    const aumentar = (id: number, actual: number) => {
+        actualizarCantidad(id, actual + 1);
     };
 
-    const disminuir = (i: number) => {
-        const nuevas = [...cantidades];
-        if (nuevas[i] > 1) nuevas[i]--;
-        setCantidades(nuevas);
-    };
-
-    const eliminarProducto = (index: number) => {
-        const nuevosProductos = productos.filter((_, i) => i !== index);
-        const nuevasCantidades = cantidades.filter((_, i) => i !== index);
-        setProductos(nuevosProductos);
-        setCantidades(nuevasCantidades);
+    const disminuir = (id: number, actual: number) => {
+        if (actual > 1) actualizarCantidad(id, actual - 1);
     };
 
     const calcularTotal = () => {
-        return productos.reduce((total, producto, index) => {
-            const precio = parseFloat(producto.precioTotal.replace(/[^0-9.]/g, ''));
-            return total + precio * cantidades[index];
-        }, 0).toFixed(2);
+        return carrito.reduce((total, p) => total + (p.precio * p.cantidad), 0).toFixed(2);
     };
+
+    const history = useHistory();
+
 
     return (
         <FruticaLayout>
-            <div className="carrito-wrapper">
-                <div className="carrito-lista">
-                    <h2 className="carrito-titulo centrado">Carrito de compras</h2>
+            <div className="carrito-container">
+                <h2 className="carrito-titulo">Carrito de compras</h2>
+                <div className="carrito-grid">
+                    <div className="carrito-lista">
+                        {carrito.map((p, i) => (
+                            <div className="carrito-item" key={p.id}>
+                                <img src={p.imagen} className="carrito-imagen" alt={p.nombre} />
 
-                    {productos.map((p, i) => {
-                        const precioUnitario = parseFloat(p.precioTotal.replace(/[^0-9.]/g, ''));
-                        const precioTotal = (precioUnitario * cantidades[i]).toFixed(2);
+                                <div className="carrito-detalle">
+                                    <h3>{p.nombre}</h3>
+                                    <p>
+                                        Disfruta de nuestras {p.nombre.toLowerCase()} frescas, sin conservantes. Perfectas para snacks y postres.
+                                    </p>
 
-                        return (
-                            <IonCard key={i} className="producto-card">
-                                <IonCardContent className="producto-card-content">
-                                    <div className="producto-horizontal">
-                                        <img src={p.imagen} className="producto-imagen-lateral" alt={p.nombre} />
+                                    <div className="carrito-precio-box">
+                                        <strong>${p.precio}.00/KG</strong>
 
-                                        <div className="producto-info">
-                                            <strong className="producto-nombre">{p.nombre}</strong>
-                                            <p className="producto-descripcion">
-                                                Disfruta de nuestras {p.nombre.toLowerCase()} frescas, sin conservantes.
-                                                Perfectas para snacks y postres.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="producto-precio-box">
-                                        <div className="producto-precio-top">
-                                            <strong>${precioTotal} Kg</strong>
-                                            <IonButton fill="clear" size="small" color="dark" onClick={() => eliminarProducto(i)}>
-                                                <IonIcon icon={trashOutline} />
+                                        <div className="carrito-controles">
+                                            <IonButton fill="solid" className="contador-boton" onClick={() => disminuir(p.id, p.cantidad)}>
+                                                <IonIcon icon={remove} />
+                                            </IonButton>
+                                            <span className="contador-numero">{p.cantidad}</span>
+                                            <IonButton fill="solid" className="contador-boton" onClick={() => aumentar(p.id, p.cantidad)}>
+                                                <IonIcon icon={add} />
                                             </IonButton>
                                         </div>
-                                        <div className="producto-contador">
-                                            <div className="contador-box">
-                                                <IonButton size="small" fill="clear" onClick={() => disminuir(i)}>
-                                                    <IonIcon icon={remove} />
-                                                </IonButton>
-                                                <span>{cantidades[i]}</span>
-                                                <IonButton size="small" fill="clear" onClick={() => aumentar(i)}>
-                                                    <IonIcon icon={add} />
-                                                </IonButton>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </IonCardContent>
-                            </IonCard>
-                        );
-                    })}
-                </div>
 
-                {/* 💳 Resumen */}
-                <div className="carrito-resumen resumen-centrado">
-                    <h3>Resumen</h3>
-                    <div className="carrito-resumen-card">
-                        <div className="resumen-item">
-                            <span>Subtotal ({productos.length} productos)</span>
+                                        <IonButton fill="solid" className="eliminar-boton" onClick={() => eliminarDelCarrito(p.id)}>
+                                            <IonIcon icon={trashOutline} />
+                                        </IonButton>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="carrito-resumen">
+                        <h3>Resumen</h3>
+                        <div className="carrito-resumen-item">
+                            <span>Subtotal ({carrito.length} productos)</span>
                             <span>${calcularTotal()}</span>
                         </div>
                         <hr />
-                        <div className="resumen-item resumen-total">
-                            <span><strong>Total</strong></span>
-                            <span><strong>${calcularTotal()}</strong></span>
+                        <div className="carrito-resumen-item">
+                            <strong>Total</strong>
+                            <strong>${calcularTotal()}</strong>
                         </div>
+                        <IonButton
+                            expand="block"
+                            className="boton-pagars"
+                            disabled={carrito.length === 0}
+                            onClick={() => history.push('/metodpago')}
+                        >
+                            IR A PAGAR
+                        </IonButton>
+
+
                     </div>
-                    <IonButton expand="block" color="danger" className="boton-comprar">
-                        Ir a Pagar
-                    </IonButton>
                 </div>
             </div>
         </FruticaLayout>
@@ -150,3 +95,4 @@ const Carrito: React.FC = () => {
 };
 
 export default Carrito;
+

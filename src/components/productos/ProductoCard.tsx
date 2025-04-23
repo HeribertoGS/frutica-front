@@ -1,11 +1,11 @@
-// MandarinaCard.tsx
+
 import React, { useState } from 'react';
-import { IonButton, IonCard, IonCardHeader, IonCardTitle,  IonCardContent,  IonImg,  IonSegment, IonSegmentButton,  IonLabel,IonIcon,} from '@ionic/react';
+import { IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonImg, IonSegment, IonSegmentButton, IonLabel, IonIcon, } from '@ionic/react';
 import { add, remove } from 'ionicons/icons';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { useIsMobile } from '../../hooks/useIsMobile';
-
+import { useCarrito } from '../../contexts/carritoContext';
 
 
 const ProductoCard: React.FC = () => {
@@ -26,84 +26,71 @@ const ProductoCard: React.FC = () => {
         "https://cdn2.cocinadelirante.com/sites/default/files/styles/gallerie/public/filefield_paths/datos-sobre-la-mandarina-en-mexico-6_0.jpg",
     ];
 
-    const precioPorKg = 30;
-    const precioPorPieza = 6;
-    const totalKg = unidad === 'pieza' ? cantidad * 1 : cantidad;
-    const precioFinal = unidad === 'pieza' ? cantidad * precioPorPieza : cantidad * precioPorKg;
+    const producto = {
+        id: 99,
+        nombre: 'Mandarina',
+        precio: unidad === 'pieza' ? 6 : 30,
+        imagen: imagenes[0],
+        cantidad,
+    };
+
+    const { agregarAlCarrito } = useCarrito();
+
+
+    const precioFinal = producto.precio * cantidad;
+
+    const handleAgregar = () => {
+        agregarAlCarrito(producto);
+    };
 
     return (
         <div style={{ width: '100%', padding: '20px' }}>
             <IonCard style={{ maxWidth: '1600px', margin: '0 auto', padding: '20px' }}>
-                {/* === CABECERA DEL PRODUCTO === */}
                 <IonCardHeader style={{ textAlign: 'center' }}>
-                    <IonCardTitle style={{ fontSize: '28px', fontWeight: 'extrabold' }}>Mandarinas</IonCardTitle>
+                    <IonCardTitle style={{ fontSize: '28px', fontWeight: 'bold' }}>Mandarinas</IonCardTitle>
                     <p style={{ fontSize: '14px', color: '#555' }}>
-                        Las mejores mandarinas de la ciudad de Huajuapan de León a la puerta de tu casa se entregará esto un buen
+                        Las mejores mandarinas de la ciudad de Huajuapan de León a la puerta de tu casa.
                     </p>
                 </IonCardHeader>
 
-                {/* === VISTA MÓVIL === */}
                 {isMobile ? (
                     <>
-                        {/* Carrusel de imágenes */}
-                        <Swiper
-                            style={{ width: '100%', borderRadius: '12px', marginBottom: '10px', maxHeight: '320px' }}>
+                        <Swiper style={{ width: '100%', borderRadius: '12px', marginBottom: '10px', maxHeight: '320px' }}>
                             {imagenes.map((img, i) => (
                                 <SwiperSlide key={i}>
-                                    <IonImg
-                                        src={img}
-                                        alt={`Mandarina ${i + 1}`}
-                                        style={{ objectFit: 'cover', borderRadius: '12px', height: '280px' }}
-                                    />
+                                    <IonImg src={img} alt={`Mandarina ${i + 1}`} style={{ objectFit: 'cover', height: '280px' }} />
                                 </SwiperSlide>
                             ))}
                         </Swiper>
 
-                        {/* Sección de interacción */}
                         <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px' }}>
                             <p style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px' }}>
                                 {unidad === 'pieza' ? '$6.00 por pieza' : '$30.00 por kg'}
                             </p>
 
-                            {/* Segmento para elegir unidad */}
                             <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
-                                <IonSegmentButton value="pieza">
-                                    <IonLabel>Pieza</IonLabel>
-                                </IonSegmentButton>
-                                <IonSegmentButton value="kg">
-                                    <IonLabel>KG</IonLabel>
-                                </IonSegmentButton>
+                                <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
+                                <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
                             </IonSegment>
 
-                            {/* Contador de cantidad */}
                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', margin: '16px 0' }}>
-                                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light">
-                                    <IonIcon icon={remove} />
-                                </IonButton>
+                                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light"><IonIcon icon={remove} /></IonButton>
                                 <span style={{ fontSize: '18px' }}>{cantidad}</span>
-                                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light">
-                                    <IonIcon icon={add} />
-                                </IonButton>
+                                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light"><IonIcon icon={add} /></IonButton>
                             </div>
 
-                            {/* Cantidad total seleccionada */}
                             <div style={{ backgroundColor: '#ddd', padding: '8px', borderRadius: '8px', textAlign: 'center', marginBottom: '10px' }}>
-                                {unidad === 'pieza' ? `${cantidad} Pieza(s)` : `${totalKg} Kilogramo(s)`}
+                                {unidad === 'pieza' ? `${cantidad} Pieza(s)` : `${cantidad} Kilogramo(s)`}
                             </div>
 
-                            {/* Botón y total */}
-                            <IonButton expand="block" color="success">
-                                Agregar al carrito
-                            </IonButton>
+                            <IonButton expand="block" color="success" onClick={handleAgregar}>Agregar al carrito</IonButton>
                             <div style={{ marginTop: '10px', textAlign: 'right' }}>
                                 <strong>Precio:</strong> ${precioFinal.toFixed(2)}
                             </div>
                         </div>
                     </>
                 ) : (
-                    // === VISTA ESCRITORIO ===
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '20px', flexWrap: 'wrap' }}>
-                        {/* Miniaturas */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', maxHeight: '500px' }}>
                             {imagenes.map((img, i) => (
                                 <img
@@ -123,7 +110,6 @@ const ProductoCard: React.FC = () => {
                             ))}
                         </div>
 
-                        {/* Imagen grande */}
                         <div>
                             <img
                                 src={imagenes[imagenActiva]}
@@ -137,38 +123,27 @@ const ProductoCard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Card de interacción */}
                         <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '12px', width: '400px' }}>
                             <p style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px' }}>
                                 {unidad === 'pieza' ? '$6.00 por pieza' : '$30.00 por kg'}
                             </p>
 
                             <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
-                                <IonSegmentButton value="pieza">
-                                    <IonLabel>Pieza</IonLabel>
-                                </IonSegmentButton>
-                                <IonSegmentButton value="kg">
-                                    <IonLabel>KG</IonLabel>
-                                </IonSegmentButton>
+                                <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
+                                <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
                             </IonSegment>
 
                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', margin: '16px 0' }}>
-                                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light">
-                                    <IonIcon icon={remove} />
-                                </IonButton>
+                                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light"><IonIcon icon={remove} /></IonButton>
                                 <span style={{ fontSize: '18px' }}>{cantidad}</span>
-                                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light">
-                                    <IonIcon icon={add} />
-                                </IonButton>
+                                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light"><IonIcon icon={add} /></IonButton>
                             </div>
 
                             <div style={{ backgroundColor: '#ddd', padding: '8px', borderRadius: '8px', textAlign: 'center', marginBottom: '10px' }}>
-                                {unidad === 'pieza' ? `${cantidad} Pieza(s)` : `${totalKg} Kilogramo(s)`}
+                                {unidad === 'pieza' ? `${cantidad} Pieza(s)` : `${cantidad} Kilogramo(s)`}
                             </div>
 
-                            <IonButton expand="block" color="success">
-                                Agregar al carrito
-                            </IonButton>
+                            <IonButton expand="block" color="success" onClick={handleAgregar}>Agregar al carrito</IonButton>
 
                             <div style={{ marginTop: '10px', textAlign: 'right' }}>
                                 <strong>Precio:</strong> ${precioFinal.toFixed(2)}

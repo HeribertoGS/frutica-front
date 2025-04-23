@@ -164,11 +164,11 @@ const Register: React.FC = () => {
                         usuario: form,
                         direccion: direccionGuardada,
                         ubicacion: coords
-                    });
-
+                    }); 
                     // Aquí podrías hacer un fetch al backend
                     // fetch('http://localhost:4000/registro-completo', {...})
                 }}
+                redirigirA="/fruta"
             //direccion={direccionGuardada || undefined}
             />
         </div>

@@ -1,7 +1,8 @@
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 import { IonModal, IonButton } from '@ionic/react';
 import React, { useState, useCallback } from 'react';
-
+import { useHistory } from 'react-router-dom';
+import './DireccionMapa.css';
 const containerStyle = {
     width: '100%',
     height: '400px',
@@ -20,9 +21,11 @@ interface Props {
         lat?: number;
         lng?: number;
     };
+    redirigirA?: string; //prop para redireccion en loggin
 }
 
-const DireccionMapa: React.FC<Props> = ({ isOpen, onClose, onSelectLocation, direccion }) => {
+const DireccionMapa: React.FC<Props> = ({ isOpen, onClose, onSelectLocation, direccion, redirigirA }) => {
+    const history = useHistory();
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: 'AIzaSyCcjNFR6pTiqE5FkWlAF3-FFcFVSOqCXtE',
     });
@@ -64,12 +67,17 @@ const DireccionMapa: React.FC<Props> = ({ isOpen, onClose, onSelectLocation, dir
                 </div>
 
                 <div style={{ marginTop: '16px' }}>
-                    <IonButton expand="block" color="success" onClick={() => onSelectLocation(position)}>
+                    <IonButton expand="block" color="success" onClick={() => {
+                        onSelectLocation(position);
+                        if (redirigirA) {
+                            history.push(redirigirA);
+                        }
+
+                    }}
+                    >
                         Usar esta ubicación
                     </IonButton>
-                    <IonButton expand="block" color="medium" onClick={onClose}>
-                        Cancelar
-                    </IonButton>
+
                 </div>
             </div>
         </IonModal>

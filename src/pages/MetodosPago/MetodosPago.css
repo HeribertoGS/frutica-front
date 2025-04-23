@@ -1,0 +1,107 @@
+/* Fondo y centrado absoluto */
+.metodopago-wrapper {
+    --background: #def1d7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Contenedor que centra todo */
+.metodopago-container {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Tarjeta principal */
+.metodopago-card-container {
+    width: 100%;
+    padding: 24px;
+    border-radius: 20px;
+    background-color: #fff;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Título */
+.metodopago-titulo {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+/* Cada opción de método */
+.metodopago-card {
+    background-color: #f8f8f8;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.metodopago-card.activo {
+    border: 2px solid #4caf50;
+    background-color: #e8f5e9;
+}
+
+/* Icono y texto de la opción */
+.metodopago-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Íconos */
+.metodopago-icon {
+    font-size: 24px;
+    color: #4caf50;
+}
+
+/* Detalles de cuenta o tarjeta */
+.metodopago-detalles {
+    font-size: 14px;
+    padding-left: 2px;
+    line-height: 1.5;
+    color: #444;
+}
+
+.metodopago-detalles p {
+    margin: 4px 0;
+}
+
+/* Icono para copiar */
+.copiar-icon {
+    font-size: 18px;
+    margin-left: 6px;
+    cursor: pointer;
+    vertical-align: middle;
+    color: #4caf50;
+}
+
+/* Formulario tarjeta */
+.metodopago-form ion-item {
+    margin-bottom: 12px;
+    --highlight-color-focused: #4caf50;
+}
+
+/* Botón final */
+.metodopago-boton {
+    margin-top: 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 14px;
+    background-color: #4caf50;
+    color: white;
+}

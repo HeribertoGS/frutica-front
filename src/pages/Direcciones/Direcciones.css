@@ -1,40 +1,43 @@
-/* === CONTENEDOR GENERAL === */
-.direcciones-wrapper {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-/* === TÍTULO DE SECCIÓN === */
+/* === CONTENEDOR PRINCIPAL === */
 .titulo-direcciones {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bold;
-    margin: 16px 0;
-    color: #222;
-    margin-bottom: 16px;
     text-align: center;
+    margin: 24px 0;
+    color: #222;
 }
 
-/* === TARJETA "AGREGAR DIRECCIÓN" === */
+/* === GRID DE TARJETAS === */
+.grid-direcciones {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 16px;
+}
+
+@media (min-width: 768px) {
+    .grid-direcciones {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* === TARJETA PARA AGREGAR === */
 .card-agregar-direccion {
-    background-color: #dceedd;
+    background-color: #e8f5e9;
     border-radius: 16px;
     padding: 32px 16px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 160px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
 .card-agregar-direccion:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
+    transform: scale(1.02);
 }
 
 .icono-agregar {
@@ -44,18 +47,18 @@
 }
 
 .texto-agregar {
+    font-size: 16px;
     font-weight: 600;
     color: #444;
-    font-size: 16px;
 }
 
 /* === TARJETAS DE DIRECCIÓN === */
 .direccion-card {
-    background: #fff;
+    background-color: #fff;
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     padding: 16px;
-    transition: transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
 }
 
 .direccion-card:hover {
@@ -66,58 +69,60 @@
     border: 2px solid #4caf50;
 }
 
+/* === ENCABEZADO Y TEXTO === */
 .direccion-header {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
     color: #333;
 }
 
 .telefono {
-    color: #999;
     font-weight: 400;
+    color: #777;
+    font-size: 14px;
 }
 
 .direccion-texto {
-    font-size: 14px;
-    color: #444;
     margin-top: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+    font-size: 14px;
     line-height: 1.5;
+    color: #444;
 }
 
-.direccion-card .icono-ubicacion {
+.direccion-coordenadas {
+    font-size: 13px;
+    color: #666;
+}
+
+.icono-ubicacion {
     color: #f44336;
     vertical-align: middle;
     margin-right: 6px;
 }
 
-/* === BOTONES DE ACCIÓN === */
+/* === BOTONES === */
 .botones-direccion {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 12px;
-    justify-content: flex-start;
 }
 
-/* Botones con color sólido */
 .botones-direccion ion-button {
     --border-radius: 8px;
     font-size: 14px;
+    --padding-start: 10px;
+    --padding-end: 10px;
 }
 
-/* === GRID RESPONSIVO === */
-.grid-direcciones {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-}
-
-@media (min-width: 768px) {
-    .grid-direcciones {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.mapa-ubicacion {
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
 }

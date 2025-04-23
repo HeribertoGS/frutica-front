@@ -1,0 +1,238 @@
+/* =============================
+   HEADER DESKTOP
+============================= */
+.desktop-header {
+    background-color: #43b049;
+    color: white;
+    width: 100%;
+    z-index: 1000;
+    font-family: 'OpenSans', sans-serif;
+}
+
+.top-bar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    gap: 16px;
+}
+
+.left-section {
+    display: flex;
+    align-items: center;
+}
+
+.logotexto {
+    height: 60px;
+    max-height: 60px;
+}
+
+.center-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: #e6f3e6;
+    border-radius: 40px;
+    padding: 6px 16px;
+    height: 38px;
+    width: 100%;
+    max-width: 550px;
+    box-shadow: none;
+    border: none;
+}
+
+.search-container .material-icons {
+    font-size: 20px;
+    color: #333;
+    margin-right: 8px;
+}
+
+.search-bar {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-size: 15px;
+    width: 100%;
+    color: #333;
+}
+
+/* =============================
+     ICONOS DERECHA
+  ============================= */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.envio {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: white;
+}
+
+.envio-label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.envio-cp {
+    font-size: 14px;
+}
+
+.cart-summary {
+    display: flex;
+    align-items: center;
+    background-color: #bcbcbc;
+    border-radius: 16px;
+    padding: 6px 10px;
+    color: white;
+}
+
+.cart-summary .material-icons {
+    font-size: 20px;
+}
+
+.cart-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 13px;
+    padding-left: 6px;
+}
+
+.icon-white {
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+/* =============================
+     SECCIÓN INFERIOR DE LINKS
+  ============================= */
+.divider {
+    border: none;
+    height: 1px;
+    background-color: white;
+    opacity: 0.5;
+    margin: 2px 16px;
+}
+
+.bottom-bar {
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 14px;
+    padding: 6px 0;
+    color: #fff;
+    background-color: #43b049;
+}
+
+.bottom-bar span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bottom-bar .material-icons {
+    font-size: 20px;
+}
+
+.bottom-bar a,
+.bottom-bar a:visited,
+.bottom-bar a:active,
+.bottom-link,
+.bottom-link:visited,
+.bottom-link:active {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+.bottom-link:hover {
+    text-decoration: underline;
+}
+
+/* =============================
+   HEADER MÓVIL AJUSTADO Y ALINEADO FORZADO
+============================= */
+.frutica-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #4CAF50;
+    padding: 8px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    gap: 8px;
+}
+
+/* Menú y Back: íconos alineados */
+.frutica-mobile-menu,
+.frutica-mobile-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.frutica-mobile-menu ion-icon,
+.frutica-mobile-back ion-icon {
+    font-size: 24px;
+    color: white;
+    display: block;
+}
+
+/* Search: forzado a altura centrada */
+.frutica-mobile-search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: #e6f3e6;
+    border-radius: 25px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.frutica-mobile-search ion-icon {
+    font-size: 18px;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.frutica-mobile-search input {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    color: #333;
+    width: 100%;
+    font-size: 15px;
+    padding: 0;
+    line-height: 40px;
+    height: 40px;
+}
+
+
+
+ion-menu.custom-menu ion-item ion-icon[slot="start"] {
+    margin-left: 1cm; /* 🎯 Espacio desde la izquierda */
+  }
+  

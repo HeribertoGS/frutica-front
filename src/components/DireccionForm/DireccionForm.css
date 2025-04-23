@@ -1,25 +1,17 @@
+/* =============================
+   FORMULARIO CONTENEDOR
+============================= */
 .formulario-direccion {
     width: 100%;
-    height: auto;
-    max-width: none;
     background-color: #e3f4df;
     border-radius: 16px;
     padding: 24px 16px;
-    box-shadow: none;
     overflow: auto;
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
+/* =============================
+   TITULO
+============================= */
 .titulo-formulario {
     text-align: center;
     font-size: 22px;
@@ -28,6 +20,9 @@
     color: #2b2b2b;
 }
 
+/* =============================
+   LAYOUT DE CAMPOS
+============================= */
 .contenedor-campos {
     display: flex;
     flex-direction: column;
@@ -40,7 +35,6 @@
     gap: 16px;
 }
 
-/* Responsive: en pantallas grandes usa dos columnas */
 @media (min-width: 768px) {
     .contenedor-campos {
         flex-direction: row;
@@ -52,33 +46,54 @@
     }
 }
 
-/* === INPUTS personalizados === */
+/* =============================
+   ION-INPUT LIMPIO Y REDUCIDO
+============================= */
 ion-input {
-    --background: #eef9ef;
+    --background: #e3f4df !important;
+    --color: #000 !important;
     --padding-start: 12px;
     --padding-end: 12px;
-    --border-radius: 10px;
     --highlight-color-focused: transparent;
-    --border-color: transparent;
-    --box-shadow: none;
-    font-size: 15px;
+    --border-radius: 8px;
+    --box-shadow: none !important;
+    font-size: 16px !important;
+    border: none !important;
+    margin: 6px 0;
+    height: 40px;
 }
 
-/* Elimina bordes nativos y azules */
 ion-input::part(native) {
-    background-color: #eef9ef;
+    background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
     outline: none !important;
+    font-size: 14px !important;
 }
 
-/* Cuando se enfoca */
 ion-input:focus::part(native),
 ion-input:focus-within::part(native) {
-    background-color: #d4ebd4 !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background-color: transparent !important;
 }
 
-/* === BOTONES === */
+/* =============================
+   ERRORES
+============================= */
+ion-input.input-error {
+    background: #fff3f3 !important;
+}
+
+ion-input.input-error::part(native) {
+    border: 2px solid red !important;
+    background: #fff3f3 !important;
+}
+
+/* =============================
+   BOTONES
+============================= */
 .botones-formulario {
     display: flex;
     flex-direction: column;
@@ -97,7 +112,43 @@ ion-input:focus-within::part(native) {
     }
 }
 
-/* === MODAL === */
+/* Botón base */
+ion-button {
+    --background: transparent !important;
+    --box-shadow: none !important;
+    --border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: uppercase;
+    width: 100%;
+    height: 44px;
+    --border-width: 0;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* Fondo real aplicado al nativo */
+ion-button::part(native) {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* Colores específicos */
+ion-button[color="warning"]::part(native) {
+    background-color: #fbc02d !important;
+    color: black !important;
+}
+
+ion-button[color="success"]::part(native) {
+    background-color: #4caf50 !important;
+    color: white !important;
+}
+
+/* =============================
+   MODAL ESTILO RESPONSIVE
+============================= */
 ion-modal::part(content) {
     width: 95vw;
     max-width: 800px;
@@ -106,9 +157,70 @@ ion-modal::part(content) {
     border-radius: 20px;
     background: #e3f4df;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    padding: 16px;
     overflow: auto;
+    margin: auto;
 }
-.input-error::part(native) {
-    border: 2px solid red !important;
-    --highlight-color-focused: red;
-}  
+
+@media (max-width: 767px) {
+    ion-modal::part(content) {
+        width: 90vw;
+        margin: 16px;
+        border-radius: 16px;
+    }
+}
+
+/* === Elimina todos los bordes de inputs Ionic === */
+ion-input {
+    border: none !important;
+    --border-width: 0 !important;
+    --border-color: transparent !important;
+    --box-shadow: none !important;
+    --background: transparent !important;
+}
+
+/* Elimina borde del input nativo */
+ion-input::part(native) {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    outline: none !important;
+}
+
+/* Incluso cuando está enfocado */
+ion-input:focus::part(native),
+ion-input:focus-within::part(native) {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background-color: transparent !important;
+}
+
+/* Y si el input es readonly */
+ion-input[readonly]::part(native) {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+/* ELIMINA bordes visibles de los campos Ionic de forma total */
+ion-input,
+ion-input::part(native),
+ion-input:focus::part(native),
+ion-input:focus-within::part(native),
+ion-input[readonly]::part(native) {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background-color: transparent !important;
+}
+
+/* También aplica si por alguna razón queda un input nativo HTML */
+input,
+input:focus,
+input[readonly] {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}

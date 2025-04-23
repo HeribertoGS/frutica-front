@@ -1,14 +1,39 @@
+/* === TÍTULO GENERAL === */
 .titulo-frutas {
-    font-size: 1.5rem;
-    margin: 16px;
+    font-size: 1.8rem;
+    margin: 24px 0 12px;
+    text-align: center;
     font-weight: bold;
-    align-content: center;
+    color: #222;
 }
 
+/* === GRID DE PRODUCTOS === */
+.product-grid {
+    justify-content: center;
+    gap: 12px;
+}
+
+.product-grid ion-col {
+    display: flex;
+    justify-content: center;
+}
+
+/* === TARJETA DEL PRODUCTO === */
 .product-card {
-    border-radius: 12px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 180px;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .product-img {
@@ -17,37 +42,161 @@
     object-fit: cover;
 }
 
+/* === INFORMACIÓN DEL PRODUCTO === */
 .product-info {
-    padding: 8px 12px;
-    position: relative;
+    padding: 12px;
+    flex-grow: 1;
 }
 
-.title-heart {
+.fruta-title-heart {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
 }
 
 .product-title {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
 }
 
-.heart-icon {
+.fruta-heart-icon {
+    font-size: 22px;
     color: orange;
-    font-size: 1.2rem;
+    cursor: pointer;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+    color: orange;
+    display: flex;
+    align-items: center;
+}
+
+.fruta-heart-icon:hover {
+    transform: scale(1.2);
 }
 
 .product-price {
     color: #2dd36f;
     font-weight: bold;
-    margin-top: 4px;
     font-size: 1rem;
+    margin-top: 6px;
 }
 
+/* === BOTÓN DE AGREGAR === */
 .btn-greenstr {
-    --background: #2dd36f;
-    color: white;
+    --background: #d32f2f;
+    --color: white;
+    --border-radius: 10px;
     font-weight: bold;
-    border-radius: 8px;
+    font-size: 15px;
+    margin-top: 12px;
+    width: 100%;
 }
+
+.btn-greenstr:hover {
+    --background: #b71c1c;
+}
+
+.fruta-btn-agregar {
+    background: #28a745;
+    /* verde tipo Bootstrap */
+
+    --color: white;
+    --border-radius: 10px;
+    font-weight: bold;
+    font-size: 15px;
+    margin-top: 12px;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.3s ease;
+}
+
+.fruta-boton-contador {
+    background: #caf6d1;
+    --color: white;
+    --border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    padding: 0;
+    min-width: unset;
+}
+
+.fruta-btn-agregar:hover {
+    --background: #218838;
+}
+
+.fruta-btn-agregar:active {
+    --background: #1e7e34;
+}
+
+/* === CONTADOR === */
+.fruta-controles {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.fruta-boton-contador {
+    --background: #2dd36f;
+    --color: white;
+    --border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    padding: 0;
+    min-width: unset;
+}
+
+.fruta-cantidad {
+    font-weight: bold;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .product-img {
+        height: 120px;
+    }
+
+    .product-title {
+        font-size: 1rem;
+    }
+
+    .btn-greenstr {
+        font-size: 14px;
+    }
+}
+
+
+
+.etiqueta-oferta {
+    background-color: #ffc107;
+    color: #333;
+    font-weight: bold;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+}
+.descuento-badge {
+    background-color: #d7f0e5;
+    color: #28a745;
+    font-weight: bold;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    margin: 6px 0;
+  }
+  
