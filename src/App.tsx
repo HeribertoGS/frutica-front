@@ -18,13 +18,6 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
 /* import '@ionic/react/css/palettes/dark.always.css'; */
 /* import '@ionic/react/css/palettes/dark.class.css'; */
 import '@ionic/react/css/palettes/dark.system.css';
@@ -45,7 +38,10 @@ import Login from './pages/Login/login';
 import MetodosPago from './pages/MetodosPago/MetodosPago';
 
 import 'leaflet/dist/leaflet.css';
-
+import productosCrear from './pages/admin/productosCrear';
+import CategoriasCrear from './pages/admin/categoriasCrear';
+import OfertaCrear from './pages/admin/ofertaCrear';
+import Forms from './pages/admin/forms';
 
 
 setupIonicReact();
@@ -97,6 +93,22 @@ const App: React.FC = () => (
           {/*ruta a login */}
           <Route path="/metodpago" component={MetodosPago} exact />
           <Redirect exact from="/" to="/metodpago" />
+
+          {/*ruta a crear productos */}
+          <Route path="/admin/prod" component={productosCrear} exact />
+          <Redirect exact from="/" to="/admin/prod" />
+
+          {/*ruta a crear crear categoria */}
+          <Route path="/admin/category" component={CategoriasCrear} exact />
+          <Redirect exact from="/" to="/admin/category" />
+
+          {/*ruta a crear crear ofertas */}
+          <Route path="/admin/oferta" component={OfertaCrear} exact />
+          <Redirect exact from="/" to="/admin/oferta" />
+
+          {/*ruta a crear crear ver forms */}
+          <Route path="/admin/forms" component={Forms} exact />
+          <Redirect exact from="/" to="/admin/forms" />
 
         </IonRouterOutlet>
       </IonReactRouter>
