@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     IonButton, IonInput, IonItem, IonLabel, IonSelect,
     IonSelectOption, IonToggle, IonList, IonText
 } from '@ionic/react';
 import './productosCrear.css';
-import FruticaLayout from '../../components/Layout/FruticaLayout'; // Si lo estás usando
 
 interface ProductoFormData {
     codigo_producto?: string;
@@ -27,7 +26,12 @@ interface ProductoFormData {
     peso_grande?: number;
 }
 
-const ProductosCrear: React.FC = () => {
+interface ProductosCrearProps {
+    onGuardar: (data: any) => void;
+    registroEditar?: ProductoFormData | null;
+}
+
+const ProductosCrear: React.FC<ProductosCrearProps> = ({ onGuardar, registroEditar }) => {
     const [form, setForm] = useState<ProductoFormData>({
         nombre: '',
         unidad_venta: 'kg',
@@ -37,6 +41,12 @@ const ProductosCrear: React.FC = () => {
         usa_tamano: false,
         variaciones_precio: false,
     });
+
+    useEffect(() => {
+        if (registroEditar) {
+            setForm(registroEditar);
+        }
+    }, [registroEditar]);
 
     const [errores, setErrores] = useState<{ [key: string]: string }>({});
 
@@ -55,13 +65,11 @@ const ProductosCrear: React.FC = () => {
 
     const validarFormulario = (): boolean => {
         const nuevosErrores: { [key: string]: string } = {};
-
         if (!form.nombre?.trim()) nuevosErrores.nombre = 'El nombre es obligatorio';
         if (!form.precio_estimado || form.precio_estimado <= 0) nuevosErrores.precio_estimado = 'El precio debe ser mayor a 0';
         if (form.requiere_pesaje && (!form.peso_estimado || form.peso_estimado <= 0)) {
             nuevosErrores.peso_estimado = 'Se requiere un peso estimado válido';
         }
-
         setErrores(nuevosErrores);
         return Object.keys(nuevosErrores).length === 0;
     };
@@ -69,117 +77,109 @@ const ProductosCrear: React.FC = () => {
     const handleSubmit = () => {
         if (validarFormulario()) {
             console.log('🟢 Producto válido:', form);
-            // Aquí iría la lógica para enviar a la API
+            onGuardar({ ...form });
+
+            // Limpiar si no es edición
+            if (!registroEditar) {
+                setForm({
+                    nombre: '',
+                    unidad_venta: 'kg',
+                    precio_estimado: 0,
+                    activo: true,
+                    requiere_pesaje: false,
+                    usa_tamano: false,
+                    variaciones_precio: false,
+                });
+            }
         }
     };
 
     return (
-        <FruticaLayout>
-            <div className="form-prod-scroll">
-                <div className="form-prod-container">
-                    <h2 className="form-prod-titulo">Agregar producto</h2>
-                    <IonList className="form-prod-lista">
+        <div className="form-prod-container">
+            <h2 className="form-prod-titulo">{registroEditar ? 'Editar producto' : 'Agregar producto'}</h2>
+            <IonList className="form-prod-lista">
+                <IonItem>
+                    <IonLabel position="stacked">Nombre *</IonLabel>
+                    <IonInput name="nombre" value={form.nombre} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
+                {errores.nombre && <IonText color="danger"><p className="form-prod-error">{errores.nombre}</p></IonText>}
 
+                <IonItem>
+                    <IonLabel position="stacked">Precio estimado *</IonLabel>
+                    <IonInput type="number" name="precio_estimado" value={form.precio_estimado} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
+                {errores.precio_estimado && <IonText color="danger"><p className="form-prod-error">{errores.precio_estimado}</p></IonText>}
+
+                <IonItem>
+                    <IonLabel position="stacked">Unidad de venta</IonLabel>
+                    <IonSelect name="unidad_venta" value={form.unidad_venta} onIonChange={handleChange} className="form-prod-select">
+                        <IonSelectOption value="kg">KG</IonSelectOption>
+                        <IonSelectOption value="pieza">Pieza</IonSelectOption>
+                    </IonSelect>
+                </IonItem>
+
+                <IonItem>
+                    <IonLabel position="stacked">Descripción</IonLabel>
+                    <IonInput name="descripcion" value={form.descripcion ?? ''} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
+
+                <IonItem>
+                    <IonLabel position="stacked">Foto (URL)</IonLabel>
+                    <IonInput name="foto" value={form.foto ?? ''} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
+
+                <IonItem>
+                    <IonLabel>Activo</IonLabel>
+                    <IonToggle name="activo" checked={form.activo} onIonChange={handleChange} />
+                </IonItem>
+
+                <IonItem>
+                    <IonLabel>Requiere pesaje</IonLabel>
+                    <IonToggle name="requiere_pesaje" checked={form.requiere_pesaje} onIonChange={handleChange} />
+                </IonItem>
+
+                {form.requiere_pesaje && (
+                    <>
                         <IonItem>
-                            <IonLabel position="stacked">Nombre *</IonLabel>
-                            <IonInput
-                                className="form-prod-input"
-                                name="nombre"
-                                value={form.nombre}
-                                onIonChange={handleChange}
-                            />
+                            <IonLabel position="stacked">Peso estimado</IonLabel>
+                            <IonInput type="number" name="peso_estimado" value={form.peso_estimado ?? ''} onIonChange={handleChange} className="form-prod-input" />
                         </IonItem>
-                        {errores.nombre && <IonText color="danger"><p className="form-prod-error">{errores.nombre}</p></IonText>}
+                        {errores.peso_estimado && <IonText color="danger"><p className="form-prod-error">{errores.peso_estimado}</p></IonText>}
+                    </>
+                )}
 
+                <IonItem>
+                    <IonLabel>Usa tamaño</IonLabel>
+                    <IonToggle name="usa_tamano" checked={form.usa_tamano} onIonChange={handleChange} />
+                </IonItem>
+
+                {form.usa_tamano && (
+                    <>
                         <IonItem>
-                            <IonLabel position="stacked">Precio estimado *</IonLabel>
-                            <IonInput
-                                className="form-prod-input"
-                                type="number"
-                                name="precio_estimado"
-                                value={form.precio_estimado}
-                                onIonChange={handleChange}
-                            />
+                            <IonLabel position="stacked">Peso chico</IonLabel>
+                            <IonInput type="number" name="peso_chico" value={form.peso_chico ?? ''} onIonChange={handleChange} className="form-prod-input" />
                         </IonItem>
-                        {errores.precio_estimado && <IonText color="danger"><p className="form-prod-error">{errores.precio_estimado}</p></IonText>}
-
                         <IonItem>
-                            <IonLabel position="stacked">Unidad de venta</IonLabel>
-                            <IonSelect
-                                className="form-prod-select"
-                                name="unidad_venta"
-                                value={form.unidad_venta}
-                                onIonChange={handleChange}
-                            >
-                                <IonSelectOption value="kg">KG</IonSelectOption>
-                                <IonSelectOption value="pieza">Pieza</IonSelectOption>
-                            </IonSelect>
+                            <IonLabel position="stacked">Peso mediano</IonLabel>
+                            <IonInput type="number" name="peso_mediano" value={form.peso_mediano ?? ''} onIonChange={handleChange} className="form-prod-input" />
                         </IonItem>
-
                         <IonItem>
-                            <IonLabel position="stacked">Descripción</IonLabel>
-                            <IonInput className="form-prod-input" name="descripcion" value={form.descripcion ?? ''} onIonChange={handleChange} />
+                            <IonLabel position="stacked">Peso grande</IonLabel>
+                            <IonInput type="number" name="peso_grande" value={form.peso_grande ?? ''} onIonChange={handleChange} className="form-prod-input" />
                         </IonItem>
+                    </>
+                )}
 
-                        <IonItem>
-                            <IonLabel position="stacked">Foto (URL)</IonLabel>
-                            <IonInput className="form-prod-input" name="foto" value={form.foto ?? ''} onIonChange={handleChange} />
-                        </IonItem>
+                <IonItem>
+                    <IonLabel position="stacked">Proveedor</IonLabel>
+                    <IonInput name="proveedor" value={form.proveedor ?? ''} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
 
-                        <IonItem>
-                            <IonLabel>Activo</IonLabel>
-                            <IonToggle name="activo" checked={form.activo} onIonChange={handleChange} />
-                        </IonItem>
-
-                        <IonItem>
-                            <IonLabel>Requiere pesaje</IonLabel>
-                            <IonToggle name="requiere_pesaje" checked={form.requiere_pesaje} onIonChange={handleChange} />
-                        </IonItem>
-
-                        {form.requiere_pesaje && (
-                            <>
-                                <IonItem>
-                                    <IonLabel position="stacked">Peso estimado</IonLabel>
-                                    <IonInput className="form-prod-input" type="number" name="peso_estimado" value={form.peso_estimado ?? ''} onIonChange={handleChange} />
-                                </IonItem>
-                                {errores.peso_estimado && <IonText color="danger"><p className="form-prod-error">{errores.peso_estimado}</p></IonText>}
-                            </>
-                        )}
-
-                        <IonItem>
-                            <IonLabel>Usa tamaño</IonLabel>
-                            <IonToggle name="usa_tamano" checked={form.usa_tamano} onIonChange={handleChange} />
-                        </IonItem>
-
-                        {form.usa_tamano && (
-                            <>
-                                <IonItem>
-                                    <IonLabel position="stacked">Peso chico</IonLabel>
-                                    <IonInput className="form-prod-input" type="number" name="peso_chico" value={form.peso_chico ?? ''} onIonChange={handleChange} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonLabel position="stacked">Peso mediano</IonLabel>
-                                    <IonInput className="form-prod-input" type="number" name="peso_mediano" value={form.peso_mediano ?? ''} onIonChange={handleChange} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonLabel position="stacked">Peso grande</IonLabel>
-                                    <IonInput className="form-prod-input" type="number" name="peso_grande" value={form.peso_grande ?? ''} onIonChange={handleChange} />
-                                </IonItem>
-                            </>
-                        )}
-
-                        <IonItem>
-                            <IonLabel position="stacked">Proveedor</IonLabel>
-                            <IonInput className="form-prod-input" name="proveedor" value={form.proveedor ?? ''} onIonChange={handleChange} />
-                        </IonItem>
-
-                        <IonButton expand="block" className="form-prod-button" onClick={handleSubmit}>
-                            Guardar producto
-                        </IonButton>
-                    </IonList>
-                </div>
-            </div>
-        </FruticaLayout>
+                <IonButton expand="block" className="form-prod-button" onClick={handleSubmit}>
+                    {registroEditar ? 'Actualizar producto' : 'Guardar producto'}
+                </IonButton>
+            </IonList>
+        </div>
     );
 };
 
