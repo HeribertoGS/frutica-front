@@ -1,0 +1,199 @@
+/* ---- Estilos para la pantalla de mensaje y aclaraciones ---- */
+
+/* MensajeAclaracion.css */
+
+.mensaje-container {
+  padding: 16px;
+  background-color: #f4f4f4;
+  min-height: 100vh;
+}
+
+.card-mensaje {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.mensaje-id {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.mensaje-img {
+  width: 100px;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.mensaje-fechas p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.mensaje-estrellas {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.mensaje-estrellas h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.estrellas-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 32px;
+  cursor: pointer;
+}
+
+.estrella {
+  color: #ccc;
+  transition: color 0.3s ease-in;
+}
+
+.estrella.activa {
+  color: #ffc107;
+  animation: fillStar 0.25s ease-in;
+}
+
+@keyframes fillStar {
+  from {
+    color: #ccc;
+    transform: scale(0.95);
+  }
+  to {
+    color: #ffc107;
+    transform: scale(1);
+  }
+}
+
+.mensaje-comentarios textarea {
+  width: 100%;
+  height: 100px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 14px;
+  resize: none;
+}
+
+.btn-enviar-mensaje {
+  float: right;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #333;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.mensaje-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.card-respuesta, .card-contacto {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-contacto p {
+  margin: 4px 0;
+}
+
+@media(min-width: 600px) {
+  .mensaje-grid {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .card-respuesta, .card-contacto {
+    width: 48%;
+  }
+}
+/*Estilo comentario*/
+.comentario-input-container {
+  position: relative;
+  margin-top: 10px;
+}
+
+.comentario-input {
+  width: 100%;
+  padding: 14px 50px 14px 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 12px;
+  font-size: 15px;
+  resize: none;
+  height: 90px;
+  box-sizing: border-box;
+  background: white;
+  outline: none;
+}
+
+.icono-enviar {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #4CAF50;
+  cursor: pointer;
+}
+/* Contenedor general de cards al final */
+.mensajes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+@media (min-width: 768px) {
+  .mensajes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card-mensaje {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 16px;
+}
+
+.card-mensaje h4 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-mensaje p {
+  font-size: 14px;
+  color: #333;
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-mensaje .contact-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}

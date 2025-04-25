@@ -1,4 +1,4 @@
-/* =============================
+/*=============================
    FORMULARIO CONTENEDOR
 ============================= */
 .formulario-direccion {
@@ -113,27 +113,9 @@ ion-input.input-error::part(native) {
 }
 
 /* Botón base */
-ion-button {
-    --background: transparent !important;
-    --box-shadow: none !important;
-    --border-radius: 12px;
-    font-weight: bold;
-    font-size: 16px;
-    text-transform: uppercase;
-    width: 100%;
-    height: 44px;
-    --border-width: 0;
-    border: none !important;
-    padding: 0 !important;
-}
 
 /* Fondo real aplicado al nativo */
-ion-button::part(native) {
-    background-color: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-}
+
 
 /* Colores específicos */
 ion-button[color="warning"]::part(native) {
@@ -223,4 +205,4 @@ input[readonly] {
     outline: none !important;
     box-shadow: none !important;
     background-color: transparent !important;
-}
+} 

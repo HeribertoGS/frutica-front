@@ -1,5 +1,5 @@
-/* Estilo general del contenedor */
-.main-container {
+/* Envoltura general del registro */
+.registro-wrapper {
   background-color: #ebfaec;
   min-height: 100vh;
   display: flex;
@@ -8,7 +8,7 @@
 }
 
 /* Formulario centrado */
-.form-wrapper {
+.registro-wrapper .form-wrapper {
   background: rgb(221, 249, 221);
   padding: 2rem;
   border-radius: 12px;
@@ -18,80 +18,56 @@
   box-sizing: border-box;
 }
 
-/* Logo (ahora más grande) */
-.logo {
+/* Logo */
+.registro-wrapper .logo {
   display: block;
   margin: 0 auto 2rem auto;
   height: 120px !important;
   width: auto !important;
-  max-height: none !important;
-  max-width: 100% !important;
   object-fit: contain;
 }
 
-/* Inputs y selects */
-input, select {
+/* Inputs y selects SOLO dentro de registro */
+.registro-wrapper input,
+.registro-wrapper select {
   width: 100%;
   padding: 0.75rem;
   margin: 0.5rem 0;
   border: 1px solid #ccc !important;
   border-radius: 8px;
-  box-shadow: none !important;
-  outline: none !important;
+  background-color: white !important;
+  color: black !important;
   font-size: 1rem;
   box-sizing: border-box;
   transition: border-color 0.3s ease;
-
-  background-color: white !important; /* ← CAMBIO CLAVE */
-  color: black !important;
-}
-select {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0;
-  border: 1px solid #ccc !important;
-  border-radius: 8px;
-  box-shadow: none !important;
-  outline: none !important;
-  font-size: 1rem;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-
-  background-color:#ddf9dd !important; /* ← clave */
-  color: black !important;
-  appearance: none; /* Opcional: elimina estilos nativos en navegadores */
 }
 
-/* Al enfocar sigue gris, sin contorno de color */
-input:focus, select:focus {
+.registro-wrapper select {
+  background-color: #ddf9dd !important;
+  appearance: none;
+}
+
+/* Foco */
+.registro-wrapper input:focus,
+.registro-wrapper select:focus {
   border-color: #ccc;
   outline: none;
   box-shadow: none;
 }
 
-/* Botón de crear cuenta */
-.button {
+/* Botones */
+.registro-wrapper .button,
+.registro-wrapper .google {
   width: 100%;
   padding: 0.75rem;
   margin-top: 1rem;
-  border: none;
   border-radius: 8px;
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  color: white;
 }
 
-/* Botón de Google */
-.google {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
+.registro-wrapper .google {
   background-color: #db4437;
   color: white;
   display: flex;
@@ -101,33 +77,46 @@ input:focus, select:focus {
 }
 
 /* Link de login */
-.login-link {
+.registro-wrapper .login-link {
   text-align: center;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
 
-.login-link a {
+.registro-wrapper .login-link a {
   color: #e53935;
   text-decoration: none;
 }
-
-.login-link a:hover {
+.registro-wrapper .login-link a:hover {
   text-decoration: underline;
 }
 
 /* Errores */
-.error {
+.registro-wrapper .error {
   color: red;
   font-size: 0.8rem;
   margin-top: -0.3rem;
   margin-bottom: 0.5rem;
 }
+/* === Botón verde === */
+.registro-wrapper .btn-verdeee {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
+.registro-wrapper .btn-verde:hover {
+  background-color: #218838;
+}
 
-input::placeholder,
-select::placeholder,
-textarea::placeholder {
-  color: #000 !important;
-  opacity: 1; /* Asegura que no se vea desvanecido */
+.registro-wrapper .btn-verde:active {
+  background-color: #1e7e34;
 }

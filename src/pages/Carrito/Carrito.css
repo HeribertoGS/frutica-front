@@ -52,7 +52,7 @@
 
 .carrito-detalle h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
 }
 
@@ -98,16 +98,7 @@
 }
 
 /* ==== BOTONES GRIS ==== */
-.contador-boton,
-.eliminar-boton {
-    background: #e0e0e0;
-    color: #333;
-    width: 36px;
-    height: 36px;
-    --border-radius: 8px;
-    font-size: 20px;
-    padding: 0;
-}
+
 
 /* ==== RESUMEN DE COMPRA ==== */
 .carrito-resumen {
@@ -171,3 +162,58 @@
         margin-top: 24px;
     }
 }
+
+.btn-rojoo{
+    --background: #D32F2F;
+    --background-hover: #B71C1C;
+    --color: white;
+    --border-radius: 14px;
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    --padding-start: 24px;
+    --padding-end: 24px;
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: none;
+    width: 50%;
+    height: 55px;
+    transition: background 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    margin: 30px auto 0 auto; /* <-- centrado automático */
+  
+  }
+  /* ==== BOTONES DEL CARRITO ==== */
+  .contador-boton {
+    --background: #28a745;
+    --color: white;
+    width: 30px;
+    height: 30px;
+    --border-radius: 10px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    padding: 0 !important;
+  }
+  
+  .eliminar-boton {
+    --background: #fbc02d;
+    --color: black;
+    width: 30px;
+    height: 30px;
+    --border-radius: 10px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    padding: 0 !important;
+  }
+  

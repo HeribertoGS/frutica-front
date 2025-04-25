@@ -92,12 +92,12 @@ const Fruta: React.FC = () => {
 
                       <div className="fruta-controles">
                         <IonButton size="small" fill="solid" onClick={() => disminuir(producto.id)} className="fruta-boton-contador">
-                          <IonIcon icon={removeOutline} />
+                              -
                         </IonButton>
                         <span className="fruta-cantidad">{carrito.find(p => p.id === producto.id)?.cantidad || 1}</span>
 
                         <IonButton size="small" fill="solid" onClick={() => aumentar(producto.id)} className="fruta-boton-contador">
-                          <IonIcon icon={addOutline} />
+                            
                         </IonButton>
                       </div>
                     ) : (

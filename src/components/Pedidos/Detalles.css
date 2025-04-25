@@ -1,0 +1,311 @@
+/* ========== ESTILO GLOBAL DETALLE DE COMPRA ========== */
+
+.detalle-titulo {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 16px;
+  }
+  
+  /* ---- Tarjeta central con estado ---- */
+  .detalle-card {
+    background-color: white;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .detalle-id {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .detalle-img {
+    width: 80px;
+    height: auto;
+    margin-bottom: 12px;
+  }
+  
+  .detalle-estado {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  /* ---- Barra de progreso decorativa ---- */
+  .detalle-barra {
+    height: 12px;
+    background-color: #ccc;
+    border-radius: 6px;
+    width: 80%;
+    margin: 0 auto;
+  }
+  
+  /* ---- Aviso (cuando aplica) ---- */
+  .detalle-aviso {
+    background-color: #f5f5f5;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 16px;
+  }
+  
+  /* ---- Detalles de la compra ---- */
+  .detalle-box {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  
+  .detalle-box p {
+    margin: 8px 0;
+    font-size: 15px;
+    color: #444;
+  }
+  
+  .detalle-box span {
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .detalle-total {
+    color: red;
+    font-weight: bold;
+  }
+  
+  /* ---- Botón productos ---- */
+  .btn-ver-productos {
+    margin-top: 12px;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+  }
+  .detalle-productos {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  
+  .productos-label {
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+  }
+
+
+  /* ===== DETALLE BOX GENERAL ===== */
+.detalle-box {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* ===== MODIFICAR BOTÓN ===== */
+  .btn-modificar {
+    margin-top: 12px;
+    background-color: #FBC02D;
+    color: white;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+  }
+  .detalle-pr
+  
+  /* ===== COMPROBANTE ===== */
+  .comprobante-box {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 16px;
+  }
+  
+  .comprobante-box h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .comprobante-box p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+  }
+  
+  .comprobante-box input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border-radius: 10px;
+    background: #f2f2f2;
+    border: 1px solid #ccc;
+    margin-bottom: 12px;
+  }
+  
+
+  .btn-cambiar {
+    background-color: #ffca28;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: none;
+    color: black;
+    cursor: pointer;
+  }
+  
+  .btn-subir {
+    background-color: #4CAF50;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .detalle-contenedor {
+    padding: 16px;
+  }
+  
+  @media (min-width: 768px) {
+    .detalle-contenedor {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 32px;
+      background-color: #fff; /* Opcional, si quieres darle fondo blanco en desktop */
+      border-radius: 20px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .btn-pagar-tarjeta {
+    background-color: #1976d2;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 20px;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 12px;
+  }
+  /* Botones rojo y verde para "Con variaciones" */
+.btn-cancelar {
+  background-color: #d32f2f;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-ver-productos.verde {
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Para enviar mensaje en estado rechazado */
+.btn-ver-productos.verde:hover {
+  background-color: #388e3c;
+}
+/*XDDDDDD PREPARACION*/
+
+
+
+.barra-relleno {
+  height: 100%;
+  background-color: orange;
+  border-radius: 6px 0 0 6px;
+}
+
+.barra-boton-cancelar {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.barra-progreso-container {
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.barra-base {
+  height: 12px;
+  background-color: #ccc;
+  border-radius: 6px;
+  width: 80%;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.barra-relleno.camino {
+  background-color: #e91e63; /* rosado fuerte */
+}
+
+.barra-relleno.finalizado {
+  background-color: #4CAF50;
+}
+
+.barra-relleno.cancelado {
+  background-color: #f44336;
+}
+
+/*Finalizado y cancelado*/
+.badge-reembolsado {
+  background-color: #8d6e63;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.badge-realizado {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.input-factura {
+  width: 100%;
+  padding: 10px;
+  margin: 12px 0;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 14px;
+}
+

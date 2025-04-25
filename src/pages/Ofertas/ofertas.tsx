@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../pages/Fruta/fruta.css'; // Reutilizamos el CSS de frutas
+import './ofertas.css';
 import {
     IonButton,
     IonIcon,
@@ -54,29 +54,29 @@ const Ofertas: React.FC = () => {
     return (
         <FruticaLayout>
             <div className="ion-padding">
-                <h2 className="titulo-frutas">Mejores ofertas</h2>
-                <IonGrid className="product-grid">
+                <h2 className="ofertas-titulo-principal">Mejores ofertas</h2>
+                <IonGrid className="ofertas-product-grid">
                     <IonRow>
                         {productosOferta.map((producto, index) => (
                             <IonCol key={index} size="12" size-sm="6" size-md="4" size-lg="2">
-                                <div className="product-card">
+                                <div className="ofertas-product-card">
                                     <img
                                         src={producto.imagen}
                                         alt={producto.nombre}
-                                        className="product-img"
+                                        className="ofertas-product-img"
                                     />
 
-                                    <div className="product-info">
+                                    <div className="ofertas-product-info">
                                         <div className="fruta-title-heart">
-                                            <div className="product-title">{producto.nombre}</div>
+                                            <div className="ofertas-product-title">{producto.nombre}</div>
                                         </div>
-                                        <p style={{ fontSize: '0.85rem', color: '#666', margin: '4px 0' }}>Local: Frutica</p>
-                                        <div className="descuento-badge">-{producto.descuento}</div>
-                                        <p className="product-price">${producto.precio.toFixed(2)}/{producto.unidad}</p>
+                                        <p className="ofertas-product-local">Local: Frutica</p>
+                                        <div className="ofertas-product-descuento">-{producto.descuento}</div>
+                                        <p className="ofertas-product-price">${producto.precio.toFixed(2)}/{producto.unidad}</p>
 
                                         <IonButton
                                             size="small"
-                                            className="fruta-btn-agregar"
+                                            className="ofertas-btn-agregar"
                                             onClick={() => handleAgregar(producto)}
                                         >
                                             <IonIcon icon={addOutline} slot="start" />
