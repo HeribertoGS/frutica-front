@@ -13,9 +13,6 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
 import '@ionic/react/css/palettes/dark.system.css';
 
 /* Global & Theme */
@@ -38,16 +35,17 @@ import HistorialPedidos from './components/Pedidos/HistorialPedidos';
 import PedidoDetalle from './components/Pedidos/PedidoDetalle';
 import MensajeAclaracion from './pages/Mensajes/MensajeAclaracion';
 
+/* Admin Pages */
+import ProductosCrear from './pages/admin/productosCrear';
+import CategoriasCrear from './pages/admin/categoriasCrear';
+import OfertaCrear from './pages/admin/ofertaCrear';
+import Forms from './pages/admin/forms';
+
 /* Context */
 import { CarritoProvider } from './contexts/carritoContext';
 
 /* Leaflet CSS */
 import 'leaflet/dist/leaflet.css';
-import productosCrear from './pages/admin/productosCrear';
-import CategoriasCrear from './pages/admin/categoriasCrear';
-import OfertaCrear from './pages/admin/ofertaCrear';
-import Forms from './pages/admin/forms';
-
 
 setupIonicReact();
 
@@ -71,22 +69,15 @@ const App: React.FC = () => (
           <Route path="/pedidos" component={HistorialPedidos} exact />
           <Route path="/pedido/:id" component={PedidoDetalle} exact />
           <Route path="/mensajes/:id" component={MensajeAclaracion} exact />
-  
-          <Route path="/admin/prod" component={productosCrear} exact />
-          <Redirect exact from="/" to="/admin/prod" />
 
-          {/*ruta a crear crear categoria */}
+          {/* Rutas admin */}
+          <Route path="/admin/prod" component={ProductosCrear} exact />
           <Route path="/admin/category" component={CategoriasCrear} exact />
-          <Redirect exact from="/" to="/admin/category" />
-
-          {/*ruta a crear crear ofertas */}
           <Route path="/admin/oferta" component={OfertaCrear} exact />
-          <Redirect exact from="/" to="/admin/oferta" />
-
-          {/*ruta a crear crear ver forms */}
           <Route path="/admin/forms" component={Forms} exact />
-          <Redirect exact from="/" to="/admin/forms" />
 
+          {/* Redirección principal (una sola) */}
+          <Redirect exact from="/" to="/admin/prod" />
         </IonRouterOutlet>
       </IonReactRouter>
     </CarritoProvider>
