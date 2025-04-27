@@ -202,3 +202,23 @@ ion-modal.custom-modal {
 .factura-actions button:hover {
     background-color: #43a047;
 }
+
+
+.profile-section {
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* ancho máximo */
+    margin-left: auto; 
+    margin-right: auto;
+}
+
+.profile-section ion-input,
+.profile-section ion-radio-group,
+.profile-section ion-button {
+    width: 100%; 
+    max-width: 500px; /*  límite para que no se vea feo */
+    margin: 0 auto;
+}
