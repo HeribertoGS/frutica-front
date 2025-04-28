@@ -4,7 +4,7 @@ import '../Register/Register.css';
 import LogoFrutica from '../../assets/img/logofrutica.png';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { buscarCorreo, loginConGoogle } from '../../service/api';
+import { buscarCorreo, loginConGoogle, verificarCorreoGoogle } from '../../service/api';
 import { saveUserSession } from '../../service/secureStorage';
 
 // Firebase config
@@ -62,20 +62,10 @@ const Login: React.FC = () => {
 
             if (loginResponse.jwtToken) {
                 await saveUserSession(loginResponse.jwtToken);
-                console.log('🔐 Token JWT guardado en secureStorage');
-            } else {
-                console.warn('⚠️ No se recibió jwtToken en respuesta');
-            }
-
-            try {
-                await buscarCorreo(user.email || '');
-                console.log('✅ Correo encontrado, redirigiendo...');
                 history.push('/fruta');
-            } catch (error) {
-                console.error('❌ Correo no encontrado:', error);
-                alert('Primero debes completar tu registro en la sección de registro.');
+            } else {
+                alert('Tu cuenta de Google no está registrada. Por favor regístrate primero.');
             }
-
         } catch (error) {
             console.error('❌ Error al iniciar sesión con Google:', error);
             alert('Error al iniciar sesión con Google');

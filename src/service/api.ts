@@ -99,6 +99,16 @@ export const buscarCorreo = async (correo: string) => {
 
   return await res.json();
 };
+// verificarCorreoGoogle.ts
+export const verificarCorreoGoogle = async (correo: string) => {
+  const res = await fetch(`${API_URL}/credenciales/buscar-por-correo/${correo}`);
+  if (!res.ok) {
+    // No existe el correo
+    return false;
+  }
+  const data = await res.json();
+  return !!data;
+};
 
 // -------- Obtener productos (requiere token) --------
 export const obtenerProductos = async () => {
