@@ -22,6 +22,8 @@ interface Props {
     lat?: number;
     lng?: number;
     maps_url?: string;
+    municipio?: string;
+    estado?: string;
   };
   redirigirA?: string;
 }
@@ -30,31 +32,64 @@ const DireccionMapa: React.FC<Props> = ({ isOpen, onClose, onSelectLocation, dir
   const history = useHistory();
 
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: 'AIzaSyCW4laHb9ldKwqNeQxfY1NPeO0frm_lGfM', // tu clave
+    googleMapsApiKey: 'AIzaSyCW4laHb9ldKwqNeQxfY1NPeO0frm_lGfM', // Tu API Key de Google Maps
   });
 
   const [position, setPosition] = useState<{ lat: number; lng: number }>(defaultCenter);
 
+  // ⚡ Esta función busca coordenadas si solo hay municipio y estado (cuando cambias CP)
+  const buscarCoordenadasDesdeTexto = async (municipio: string, estado: string) => {
+    try {
+      const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(municipio + ', ' + estado)}&key=AIzaSyCW4laHb9ldKwqNeQxfY1NPeO0frm_lGfM`);
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        return { lat: location.lat, lng: location.lng };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error buscando coordenadas:', error);
+      return null;
+    }
+  };
+
+  // ⚡ Esta función extrae latitud y longitud de una URL de Google Maps
   const extraerCoordsDeUrl = (url: string): { lat: number; lng: number } | null => {
     const match = url.match(/q=([-\d.]+),([-\d.]+)/);
     if (match) {
-      return {
-        lat: parseFloat(match[1]),
-        lng: parseFloat(match[2]),
-      };
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
     }
     return null;
   };
 
+  // 🧠 Cuando cambia la dirección
   useEffect(() => {
-    if (direccion?.lat !== undefined && direccion?.lng !== undefined) {
-      setPosition({ lat: direccion.lat, lng: direccion.lng });
-    } else if (direccion?.maps_url) {
-      const coords = extraerCoordsDeUrl(direccion.maps_url);
-      if (coords) setPosition(coords);
-    }
+    const cargarCoordenadas = async () => {
+      if (direccion?.lat !== undefined && direccion?.lng !== undefined && isFinite(direccion.lat) && isFinite(direccion.lng)) {
+        setPosition({ lat: direccion.lat, lng: direccion.lng });
+      } else if (direccion?.maps_url) {
+        const coords = extraerCoordsDeUrl(direccion.maps_url);
+        if (coords) {
+          setPosition(coords);
+        } else {
+          setPosition(defaultCenter);
+        }
+      } else if (direccion?.municipio && direccion?.estado) {
+        const coords = await buscarCoordenadasDesdeTexto(direccion.municipio, direccion.estado);
+        if (coords) {
+          setPosition(coords);
+        } else {
+          setPosition(defaultCenter);
+        }
+      } else {
+        setPosition(defaultCenter);
+      }
+    };
+
+    cargarCoordenadas();
   }, [direccion]);
 
+  // 🧠 Cuando haces click en el mapa
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     if (e.latLng) {
       setPosition({
@@ -92,9 +127,19 @@ const DireccionMapa: React.FC<Props> = ({ isOpen, onClose, onSelectLocation, dir
               if (redirigirA) {
                 history.push(redirigirA);
               }
+              onClose(); // 🔥 Cerrar modal después de seleccionar
             }}
           >
             Usar esta ubicación
+          </IonButton>
+
+          <IonButton
+            expand="block"
+            color="medium"
+            style={{ marginTop: '10px' }}
+            onClick={onClose}
+          >
+            Cancelar
           </IonButton>
         </div>
       </div>

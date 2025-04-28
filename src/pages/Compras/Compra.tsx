@@ -47,8 +47,8 @@ const Compra: React.FC = () => {
       {paso === 1 && !tipoEntrega && <PasoSeleccionEntrega onNext={() => setPaso(2)} />}
       {paso === 2 && <PasoFechaHoraDireccion onNext={() => setPaso(3)} onBack={handleBack} />}
       {paso === 3 && <PasoMetodoPago onNext={() => setPaso(4)} onBack={handleBack} />}
-      {paso === 4 && <PasoRevisarConfirmar onBack={handleBack} pedido={pedidoActual} />}
-    </FruticaLayout>
+      {paso === 4 && <PasoRevisarConfirmar onBack={handleBack} />}
+      </FruticaLayout>
   );
 };
 export default Compra;

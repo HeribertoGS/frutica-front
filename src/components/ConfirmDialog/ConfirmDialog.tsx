@@ -29,7 +29,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         {detalle && <p>{detalle}</p>}
         <div className="confirm-buttons">
           <button className="btn-amarillo" onClick={onClose}>{textoCancelar}</button>
-          <button className="btn-verdee" onClick={onConfirm}>{textoConfirmar}</button>
+          <button className="btn-confirmar" onClick={onConfirm}>{textoConfirmar}</button>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom'; // 👈 Importa useHistory
+import { useHistory } from 'react-router-dom';
 import '../Detalles.css';
 import ModalProductos from '../../ModalProductos/ModalProductos';
 
@@ -26,10 +26,10 @@ interface Props {
 
 const EnCaminoEstado: React.FC<Props> = ({ pedido }) => {
   const [mostrarModal, setMostrarModal] = useState(false);
-  const history = useHistory(); // 👈 Hook de navegación
+  const history = useHistory();
 
   const irAMensajes = () => {
-    history.push(`/mensajes/${pedido.id}`); // 👈 Redirección al detalle de mensaje
+    history.push(`/mensajes/${pedido.id}`); // 🔥 Ir a mensajes de este pedido
   };
 
   return (
@@ -38,11 +38,13 @@ const EnCaminoEstado: React.FC<Props> = ({ pedido }) => {
         <div className="detalle-id">
           <span>Pedido:</span> <span>#{pedido.id}</span>
         </div>
+
         <img
-          src="src/assets/img/Camino.png"
+          src="/assets/img/Camino.png" // ✅ Corrijo ruta: debe ser pública
           alt="En camino"
           className="detalle-img"
         />
+
         <div className="detalle-estado">En camino</div>
 
         <div className="barra-progreso-container">
@@ -78,7 +80,7 @@ const EnCaminoEstado: React.FC<Props> = ({ pedido }) => {
       <button
         className="btn-ver-productos verde"
         style={{ marginTop: '12px' }}
-        onClick={irAMensajes} 
+        onClick={irAMensajes}
       >
         Enviar mensaje
       </button>

@@ -87,7 +87,7 @@ const Register: React.FC = () => {
           throw new Error('JWT faltante');
         }
 
-        await saveUserSession(res.jwtToken);
+        await saveUserSession(res.jwtToken, res.role);
         console.log('🔐 Token guardado en secureStorage');
         setMostrarDireccionForm(true);
       } catch (err) {

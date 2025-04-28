@@ -1,123 +1,110 @@
-import { IonPage, IonContent, IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol, IonIcon, useIonToast, } from "@ionic/react";
-import { heartOutline, heart, addOutline, removeOutline, } from "ionicons/icons";
-import '../Fruta/fruta.css';
-import FruticaLayout from "../../components/Layout/FruticaLayout";
-import { useWishlist } from "../../contexts/WishlistContext";
-import { useCarrito } from "../../contexts/carritoContext";
-import { useHistory } from "react-router";
-useHistory
-const initialProductos = [
-    { id: 1, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
-    { id: 2, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
-    { id: 3, nombre: "Peras", precio: 60, imagen: "https://www.saborusa.com/cr/wp-content/uploads/sites/14/2023/12/propiedades-de-la-pera-salud-belleza.jpg" },
-    { id: 4, nombre: "Mandarina", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxwctBQcBp0VZ4S9eZ8CKw9e9zQXw-47a0pQ&s" },
-];
+import { IonContent, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, useIonToast } from '@ionic/react';
+import { heartOutline, heart, addOutline, removeOutline } from 'ionicons/icons';
+import FruticaLayout from '../../components/Layout/FruticaLayout';
+import { useWishlist } from '../../contexts/WishlistContext';
+import { useCarrito } from '../../contexts/carritoContext';
+import { useEffect, useState } from 'react';
+import { obtenerProductos } from '../../service/api';
+import './ListaDeseos.css';
 
 const ListaDeseos: React.FC = () => {
-    const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
-    const { carrito, agregarAlCarrito, actualizarCantidad } = useCarrito();
-    const [present] = useIonToast();
+  const { wishlist } = useWishlist();
+  const { carrito, agregarAlCarrito, actualizarCantidad } = useCarrito();
+  const [productos, setProductos] = useState<any[]>([]);
+  const [present] = useIonToast();
 
-    const handleToggle = (producto: any) => {
-        toggleWishlist(producto);
-        present({
-            message: `${producto.nombre} fue eliminado de la lista de deseos`,
-            duration: 1500,
-            color: "medium",
-        });
+  useEffect(() => {
+    const fetchProductos = async () => {
+      try {
+        const data = await obtenerProductos();
+        setProductos(data);
+      } catch (error) {
+        console.error('❌ Error al cargar productos:', error);
+        present({ message: 'Error al cargar productos', duration: 2000, color: 'danger' });
+      }
     };
+    fetchProductos();
+  }, []);
 
-    const aumentar = (id: number) => {
-        const actual = carrito.find(p => p.id === id)?.cantidad || 1;
-        actualizarCantidad(id, actual + 1);
-    };
+  // 🔥 Refrescar lista si cambia wishlist
+  useEffect(() => {
+    setProductos(prev => [...prev]);
+  }, [wishlist]);
 
-    const disminuir = (id: number) => {
-        const actual = carrito.find(p => p.id === id)?.cantidad || 1;
-        if (actual > 1) {
-            actualizarCantidad(id, actual - 1);
-        }
-    };
+  const productosEnLista = productos.filter(p => wishlist.includes(p.producto_k));
 
-    const history = useHistory();
-    const irADetalle = () => {
-        history.push('/producto');
-    };
+  const aumentar = (id: number) => {
+    const actual = carrito.find(p => p.id === id)?.cantidad || 1;
+    actualizarCantidad(id, actual + 1);
+  };
 
-    return (
-        <FruticaLayout>
-            <IonContent fullscreen className="ion-padding">
-                <h2 className="titulo-frutas">Lista de deseos</h2>
-                <IonGrid>
-                    <IonRow className="product-grid">
-                        {wishlist.length === 0 ? (
-                            <p style={{ marginLeft: "16px" }}>
-                                No hay productos en tu lista de deseos.
-                            </p>
-                        ) : (
-                            wishlist.map((producto, index) => (
-                                <IonCol key={index} size="12" size-md="4" size-lg="2">
-                                    <IonCard className="fruta-product-card" >
-                                        <img
-                                            src={producto.imagen}
-                                            alt={producto.nombre}
-                                            className="fruta-product-img"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                irADetalle();
-                                            }}
-                                        />
+  const disminuir = (id: number) => {
+    const actual = carrito.find(p => p.id === id)?.cantidad || 1;
+    if (actual > 1) {
+      actualizarCantidad(id, actual - 1);
+    }
+  };
 
-                                        <IonCardHeader className="fruta-product-info">
-                                            <div className="fruta-title-heart">
-                                                <IonCardTitle className="fruta-product-title">
-                                                    {producto.nombre}
-                                                </IonCardTitle>
-                                                <IonIcon
-                                                    icon={isInWishlist(producto.id) ? heart : heartOutline}
-                                                    className="fruta-heart-icon"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        handleToggle(producto);
-                                                    }}
-                                                />
-                                            </div>
-                                            <p className="fruta-product-price">
-                                                ${producto.precio}.00 kg
-                                            </p>
-                                        </IonCardHeader>
+  return (
+    <FruticaLayout>
+      <IonContent className="ion-padding">
+        <h2 className="titulo-frutas">Lista de deseos</h2>
+        <IonGrid>
+          <IonRow className="product-grid">
+            {productosEnLista.length === 0 ? (
+              <p>No tienes productos en tu lista de deseos.</p>
+            ) : (
+              productosEnLista.map((producto) => (
+                <IonCol key={producto.producto_k} size="12" size-md="4" size-lg="2">
+                  <IonCard className="fruta-product-card">
+                    <img
+                      src={producto.foto?.[0] || 'https://via.placeholder.com/150'}
+                      alt={producto.nombre}
+                      className="fruta-product-img"
+                    />
 
-                                        <IonCardContent>
-                                            {carrito.find((p) => p.id === producto.id) ? (
+                    <IonCardHeader className="fruta-product-info">
+                      <div className="fruta-title-heart">
+                        <IonCardTitle className="fruta-product-title">{producto.nombre}</IonCardTitle>
+                      </div>
+                      <p className="fruta-product-price">
+                        ${producto.precio_por_kg ?? producto.precio_por_pieza ?? 0}.00 {producto.precio_por_kg ? 'kg' : 'pieza'}
+                      </p>
+                    </IonCardHeader>
 
-                                                <div className="fruta-controles">
-                                                    <IonButton size="small" fill="solid" onClick={() => disminuir(producto.id)} className="fruta-boton-contador">
-                                                        <IonIcon icon={removeOutline} />
-                                                    </IonButton>
-                                                    <span className="fruta-cantidad">{carrito.find(p => p.id === producto.id)?.cantidad || 1}</span>
-
-                                                    <IonButton size="small" fill="solid" onClick={() => aumentar(producto.id)} className="fruta-boton-contador">
-                                                        <IonIcon icon={addOutline} />
-                                                    </IonButton>
-                                                </div>
-                                            ) : (
-                                                <IonButton className="fruta-btn-agregar" expand="block" onClick={() => agregarAlCarrito({ id: producto.id, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen, cantidad: 1 })}>
-                                                    <IonIcon icon={addOutline} slot="start" />
-                                                    Agregar
-                                                </IonButton>
-                                            )}
-                                        </IonCardContent>
-                                    </IonCard>
-                                </IonCol>
-                            ))
-                        )}
-                    </IonRow>
-                </IonGrid>
-            </IonContent>
-        </FruticaLayout>
-    );
+                    <IonCardContent>
+                      {carrito.find((p) => p.id === producto.producto_k) ? (
+                        <div className="fruta-controles">
+                          <IonButton size="small" fill="solid" onClick={() => disminuir(producto.producto_k)} className="fruta-boton-contador">
+                            <IonIcon icon={removeOutline} />
+                          </IonButton>
+                          <span className="fruta-cantidad">{carrito.find(p => p.id === producto.producto_k)?.cantidad || 1}</span>
+                          <IonButton size="small" fill="solid" onClick={() => aumentar(producto.producto_k)} className="fruta-boton-contador">
+                            <IonIcon icon={addOutline} />
+                          </IonButton>
+                        </div>
+                      ) : (
+                        <IonButton className="fruta-btn-agregar" expand="block" onClick={() => agregarAlCarrito({
+                          id: producto.producto_k,
+                          nombre: producto.nombre,
+                          precio: producto.precio_por_kg ?? producto.precio_por_pieza ?? 0,
+                          imagen: producto.foto?.[0] || '',
+                          cantidad: 1,
+                        })}>
+                          <IonIcon icon={addOutline} slot="start" />
+                          Agregar
+                        </IonButton>
+                      )}
+                    </IonCardContent>
+                  </IonCard>
+                </IonCol>
+              ))
+            )}
+          </IonRow>
+        </IonGrid>
+      </IonContent>
+    </FruticaLayout>
+  );
 };
 
 export default ListaDeseos;

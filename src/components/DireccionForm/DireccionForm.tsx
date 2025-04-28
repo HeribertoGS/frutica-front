@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IonButton, IonInput, useIonToast } from '@ionic/react';
 import './DireccionForm.css';
-import { guardarDireccion } from '../../service/api';
-import { getUserSession } from '../../service/secureStorage';
 
 export interface Direccion {
   calle: string;
@@ -10,12 +8,13 @@ export interface Direccion {
   colonia: string;
   municipio: string;
   estado: string;
-  codigoPostal: string;
-  referencias: string;
+  cp: string;
+  pais: string;
+  referencia: string;
   telefono: string;
+  maps_url?: string;
   lat?: number;
   lng?: number;
-  maps_url?: string;
 }
 
 interface DireccionFormProps {
@@ -34,24 +33,27 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
     colonia: '',
     municipio: '',
     estado: 'Oaxaca',
-    codigoPostal: '',
-    referencias: '',
+    cp: '',
+    pais: 'Mexico',
+    referencia: '',
     telefono: '',
   });
 
   const [camposVacios, setCamposVacios] = useState<(keyof Direccion)[]>([]);
 
   useEffect(() => {
-    if (direccionInicial) setForm(direccionInicial);
+    if (direccionInicial) {
+      setForm(direccionInicial);
+    }
   }, [direccionInicial]);
 
   const handleChange = (field: keyof Direccion, value: string) => {
-    setForm({ ...form, [field]: value });
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleCodigoPostal = async (value: string) => {
     const soloNumeros = value.replace(/\D/g, '').slice(0, 5);
-    setForm(prev => ({ ...prev, codigoPostal: soloNumeros }));
+    setForm(prev => ({ ...prev, cp: soloNumeros }));
 
     if (soloNumeros.length === 5) {
       try {
@@ -72,12 +74,13 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
       }
     }
   };
-  const handleSubmit = async () => {
-    const obligatorios: (keyof Direccion)[] = ['calle', 'numero', 'colonia', 'codigoPostal', 'telefono'];
-    const vacios = obligatorios.filter(campo => !form[campo] || (campo === 'codigoPostal' && form[campo].length !== 5));
-  
+
+  const handleSubmit = () => {
+    const obligatorios: (keyof Direccion)[] = ['calle', 'numero', 'colonia', 'cp', 'telefono'];
+    const vacios = obligatorios.filter(campo => !form[campo] || (campo === 'cp' && form[campo].length !== 5));
+
     setCamposVacios(vacios);
-  
+
     if (vacios.length > 0) {
       presentToast({
         message: 'Por favor completa todos los campos obligatorios.',
@@ -87,133 +90,81 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
       });
       return;
     }
-  
-    try {
-      const token = await getUserSession();
-  
-      const direccionToSend = {
-        calle: form.calle,
-        numero: form.numero,
-        colonia: form.colonia,
-        cp: form.codigoPostal,
-        pais: 'México',
-        estado: form.estado,
-        municipio: form.municipio,
-        referencia: form.referencias,
-        localidad: '',
-        maps_url: '',
-        latitud: 0,
-        longitud: 0,
-        es_publica: false,
-      };
-  
-      const respuesta = await guardarDireccion(direccionToSend, token!);
-  
-      presentToast({ message: 'Dirección guardada exitosamente.', duration: 2000, color: 'success' });
-  
-      onGuardar({
-        ...form,
-        lat: parseFloat(respuesta.latitud),
-        lng: parseFloat(respuesta.longitud),
-        maps_url: respuesta.maps_url,
-      });
-  
-    } catch (err: any) {
-      console.error('❌ Error al guardar dirección:', err);
-      presentToast({ message: err.message || 'Error al guardar dirección', duration: 2000, color: 'danger' });
-    }
+
+    onGuardar(form);
   };
-  
 
   return (
     <div className="formulario-direccion">
       <h3 className="titulo-formulario">{modo === 'crear' ? 'Agregar dirección' : 'Editar dirección'}</h3>
       <div className="contenedor-campos">
         <div className="columna">
-          <div>
-            <IonInput
-              className={camposVacios.includes('calle') ? 'input-error' : ''}
-              label="Calle: "
-              value={form.calle}
-              placeholder="Ingresa el nombre de tu calle"
-              onIonChange={(e) => handleChange('calle', e.detail.value!)}
-            />
-            {camposVacios.includes('calle') && <div className="mensaje-error">Campo obligatorio</div>}
-          </div>
-
-          <div>
-            <IonInput
-              className={camposVacios.includes('colonia') ? 'input-error' : ''}
-              label="Colonia: "
-              value={form.colonia}
-              placeholder="Ingresa el nombre de tu colonia"
-              onIonChange={(e) => handleChange('colonia', e.detail.value!)}
-            />
-            {camposVacios.includes('colonia') && <div className="mensaje-error">Campo obligatorio</div>}
-          </div>
-
-          <div>
-            <IonInput label="Municipio: " value={form.municipio} readonly placeholder="(Automatico)"/>
-          </div>
-
-          <div>
-            <IonInput
-              label="Referencias: "
-              value={form.referencias}
-              placeholder="Ingresa tus referencias"
-              onIonChange={(e) => handleChange('referencias', e.detail.value!)}
-            />
-          </div>
+          <IonInput
+            label="Calle:"
+            value={form.calle}
+            placeholder="Ingresa el nombre de tu calle"
+            onIonChange={(e) => handleChange('calle', e.detail.value!)}
+            className={camposVacios.includes('calle') ? 'input-error' : ''}
+          />
+          <IonInput
+            label="Colonia:"
+            value={form.colonia}
+            placeholder="Ingresa tu colonia"
+            onIonChange={(e) => handleChange('colonia', e.detail.value!)}
+            className={camposVacios.includes('colonia') ? 'input-error' : ''}
+          />
+          <IonInput
+            label="Municipio:"
+            value={form.municipio}
+            readonly
+            placeholder="(Se llena automáticamente)"
+          />
+          <IonInput
+            label="Referencias:"
+            value={form.referencia}
+            placeholder="Opcional"
+            onIonChange={(e) => handleChange('referencia', e.detail.value!)}
+          />
         </div>
 
         <div className="columna">
-          <div>
-            <IonInput
-              className={camposVacios.includes('numero') ? 'input-error' : ''}
-              label="Número: "
-              type="number"
-              value={form.numero}
-              placeholder="Número exterior"
-              onIonChange={(e) => handleChange('numero', e.detail.value!)}
-            />
-            {camposVacios.includes('numero') && <div className="mensaje-error">Campo obligatorio</div>}
-          </div>
-
-          <div>
-            <IonInput
-              className={camposVacios.includes('codigoPostal') ? 'input-error' : ''}
-              label="Código postal: "
-              type="text"
-              inputMode="numeric"
-              maxlength={5}
-              value={form.codigoPostal}
-              placeholder="Ej. 68000"
-              onIonChange={(e) => handleCodigoPostal(e.detail.value || '')}
-            />
-            {camposVacios.includes('codigoPostal') && <div className="mensaje-error">Campo obligatorio</div>}
-          </div>
-
-          <div>
-            <IonInput label="Estado: " value={form.estado} readonly />
-          </div>
-
-          <div>
-            <IonInput
-              label="Teléfono: "
-              type="tel"
-              maxlength={10}
-              value={form.telefono}
-              placeholder="Ej. 9511234567"
-              onIonChange={(e) => handleChange('telefono', (e.detail.value || '').replace(/\D/g, '').slice(0, 10))}
-              className={!form.telefono || form.telefono.length !== 10 ? 'campo-obligatorio' : ''}
-            />
-          </div>
+          <IonInput
+            label="Número:"
+            value={form.numero}
+            type="number"
+            placeholder="Número exterior"
+            onIonChange={(e) => handleChange('numero', e.detail.value!)}
+            className={camposVacios.includes('numero') ? 'input-error' : ''}
+          />
+          <IonInput
+            label="Código Postal:"
+            inputMode="numeric"
+            value={form.cp}
+            maxlength={5}
+            placeholder="Ej. 68000"
+            onIonChange={(e) => handleCodigoPostal(e.detail.value || '')}
+            className={camposVacios.includes('cp') ? 'input-error' : ''}
+          />
+          <IonInput
+            label="Estado:"
+            value={form.estado}
+            readonly
+          />
+          <IonInput
+            label="Teléfono:"
+            inputMode="tel"
+            value={form.telefono}
+            maxlength={10}
+            placeholder="Ej. 9511234567"
+            onIonChange={(e) => handleChange('telefono', (e.detail.value || '').replace(/\D/g, '').slice(0, 10))}
+            className={!form.telefono || form.telefono.length !== 10 ? 'input-error' : ''}
+          />
         </div>
       </div>
 
       <div className="botones-formulario">
         <IonButton color="warning" onClick={onCancelar}>Volver</IonButton>
-        <IonButton color="success" onClick={handleSubmit}>Guardar</IonButton>
+        <IonButton color="success" onClick={handleSubmit}>Guardar y seleccionar ubicación</IonButton>
       </div>
     </div>
   );

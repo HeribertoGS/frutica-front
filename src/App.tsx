@@ -57,7 +57,7 @@ const App: React.FC = () => (
           {/* Rutas principales */}
           <Route path="/fruta" component={Fruta} exact />
           <Route path="/registro" component={Register} exact />
-          <Route path="/producto" component={Producto} exact />
+          <Route path="/producto/:id" component={Producto} exact />
           <Route path="/perfil" component={Perfil} exact />
           <Route path="/carrito" component={Carrito} exact />
           <Route path="/LDeseos" component={ListaDeseos} exact />
@@ -76,8 +76,8 @@ const App: React.FC = () => (
           <Route path="/admin/oferta" component={OfertaCrear} exact />
           <Route path="/admin/forms" component={Forms} exact />
 
-          {/* Redirección principal (una sola) */}
-          <Redirect exact from="/" to="/admin/prod" />
+          {/* Redirección principal corregida */}
+          <Redirect exact from="/" to="/login" />
         </IonRouterOutlet>
       </IonReactRouter>
     </CarritoProvider>

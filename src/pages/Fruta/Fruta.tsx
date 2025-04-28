@@ -1,40 +1,66 @@
-import { IonContent, IonGrid, IonRow, IonCol, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, useIonToast, IonCard, } from "@ionic/react";
+import { IonContent, IonGrid, IonRow, IonCol, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon, useIonToast, IonCard } from "@ionic/react";
 import { heartOutline, heart, addOutline, removeOutline } from "ionicons/icons";
 import "../../pages/Fruta/fruta.css";
 import FruticaLayout from "../../components/Layout/FruticaLayout";
 import { useWishlist } from "../../contexts/WishlistContext";
 import { useCarrito } from "../../contexts/carritoContext";
 import { useHistory } from 'react-router-dom';
-
-
-const productos = [
-  { id: 1, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
-  { id: 2, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
-  { id: 3, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
-  { id: 4, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
-  { id: 5, nombre: "Fresas", precio: 60, imagen: "https://www.gob.mx/cms/uploads/article/main_image/30427/fresa-blog.jpg" },
-  { id: 6, nombre: "Duraznos", precio: 60, imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGMOSRUPupDzll7ZKsYKsGhr_X5ZSIQp-ApA&s" },
-
-];
+import { useEffect, useState } from "react";
+import { agregarAListaDeseos, obtenerProductos, quitarDeListaDeseos } from "../../service/api";
 
 const Fruta: React.FC = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const [present] = useIonToast();
   const { carrito, agregarAlCarrito, actualizarCantidad } = useCarrito();
+  const [productos, setProductos] = useState<any[]>([]);
+  const [present] = useIonToast();
+  const history = useHistory();
 
-  const handleClickHeart = (producto: any) => {
-    toggleWishlist(producto);
-    present({
-      message: isInWishlist(producto.id)
-        ? `${producto.nombre} eliminado de la lista de deseos`
-        : `${producto.nombre} agregado a la lista de deseos`,
-      duration: 1500,
-      color: "medium",
-    });
+  useEffect(() => {
+    const cargarProductos = async () => {
+      try {
+        const data = await obtenerProductos();
+        setProductos(data);
+      } catch (error) {
+        console.error('❌ Error al cargar productos:', error);
+        present({ message: 'Error al cargar productos', duration: 2000, color: 'danger' });
+      }
+    };
+
+    cargarProductos();
+  }, []);
+  const handleClickHeart = async (producto: any) => {
+    try {
+      if (isInWishlist(producto.producto_k)) {
+        await quitarDeListaDeseos(producto.producto_k);
+      } else {
+        await agregarAListaDeseos(producto.producto_k);
+      }
+  
+      await toggleWishlist(producto.producto_k); // 🔥 Que espere terminar de actualizar
+  
+      present({
+        message: isInWishlist(producto.producto_k)
+          ? `${producto.nombre} eliminado de la lista de deseos`
+          : `${producto.nombre} agregado a la lista de deseos`,
+        duration: 1500,
+        color: "medium",
+      });
+    } catch (err) {
+      console.error('❌ Error al actualizar lista de deseos:', err);
+      present({ message: 'Error en la lista de deseos', duration: 2000, color: 'danger' });
+    }
   };
 
   const handleAgregar = (producto: any) => {
-    agregarAlCarrito({ ...producto, cantidad: 1 });
+    const precio = producto.precio_por_kg ?? producto.precio_por_pieza ?? 0;
+
+    agregarAlCarrito({
+      id: producto.producto_k,
+      nombre: producto.nombre,
+      precio: precio,
+      imagen: producto.foto?.[0] || '',
+      cantidad: 1,
+    });
   };
 
   const aumentar = (id: number) => {
@@ -49,67 +75,74 @@ const Fruta: React.FC = () => {
     }
   };
 
-  const history = useHistory();
-  const irADetalle = () => {
-    history.push('/producto');
+  const irADetalle = (id: number) => {
+    history.push(`/producto/${id}`);
   };
-
 
   return (
     <FruticaLayout>
       <IonContent className="ion-padding">
-        <h2 className="fruta-titulo-principal">Frutas</h2>
+        <h2 className="fruta-titulo-principal">Frutas y Verduras</h2>
         <IonGrid>
           <IonRow className="fruta-product-grid">
-            {productos.map((producto) => (
-              <IonCol key={producto.id} size="12" size-sm="6" size-md="4" size-lg="2">
-                <IonCard className="fruta-product-card" >
-                  <img src={producto.imagen} alt={producto.nombre} className="fruta-product-img" onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    irADetalle();
-                  }} />
+            {productos.map((producto) => {
+              const precioMostrado = producto.precio_por_kg ?? producto.precio_por_pieza ?? 0;
+              const unidadMostrada = producto.precio_por_kg ? 'kg' : 'pieza';
 
-                  <IonCardHeader className="fruta-product-info">
-                    <div className="fruta-title-heart">
-                      <IonCardTitle className="fruta-product-title">{producto.nombre}</IonCardTitle>
-                      <IonIcon
-                        icon={isInWishlist(producto.id) ? heart : heartOutline}
-                        className="fruta-heart-icon"
-                        style={{ color: isInWishlist(producto.id) ? "#FFB347" : "orange" }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleClickHeart(producto);
-                        }}
-                      />
-                    </div>
-                    <p className="fruta-product-price">${producto.precio}.00 kg</p>
-                  </IonCardHeader>
+              return (
+                <IonCol key={producto.producto_k} size="12" size-sm="6" size-md="4" size-lg="2">
+                  <IonCard className="fruta-product-card">
+                    <img
+                      src={producto.foto?.[0] || 'https://via.placeholder.com/150'}
+                      alt={producto.nombre}
+                      className="fruta-product-img"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        irADetalle(producto.producto_k);
+                      }}
+                    />
 
-                  <IonCardContent>
-                    {carrito.find((p) => p.id === producto.id) ? (
-
-                      <div className="fruta-controles">
-                        <IonButton size="small" fill="solid" onClick={() => disminuir(producto.id)} className="fruta-boton-contador">
-                              -
-                        </IonButton>
-                        <span className="fruta-cantidad">{carrito.find(p => p.id === producto.id)?.cantidad || 1}</span>
-
-                        <IonButton size="small" fill="solid" onClick={() => aumentar(producto.id)} className="fruta-boton-contador">
-                            
-                        </IonButton>
+                    <IonCardHeader className="fruta-product-info">
+                      <div className="fruta-title-heart">
+                        <IonCardTitle className="fruta-product-title">{producto.nombre}</IonCardTitle>
+                        <IonIcon
+                          icon={isInWishlist(producto.producto_k) ? heart : heartOutline}
+                          className={`fruta-heart-icon ${isInWishlist(producto.producto_k) ? 'relleno' : ''}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleClickHeart(producto);
+                          }}
+                        />
                       </div>
-                    ) : (
-                      <IonButton className="fruta-btn-agregar" expand="block" onClick={() => agregarAlCarrito({ id: producto.id, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen, cantidad: 1 })}>
-                        <IonIcon icon={addOutline} slot="start" />
-                        Agregar
-                      </IonButton>
-                    )}
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-            ))}
+                      <p className="fruta-product-price">
+                        ${precioMostrado}.00 {unidadMostrada}
+                      </p>
+                    </IonCardHeader>
+
+                    <IonCardContent>
+                      {carrito.find((p) => p.id === producto.producto_k) ? (
+                        <div className="fruta-controles">
+                          <IonButton size="small" fill="solid" onClick={() => disminuir(producto.producto_k)} className="fruta-boton-contador">
+                            <IonIcon icon={removeOutline} />
+                          </IonButton>
+                          <span className="fruta-cantidad">{carrito.find(p => p.id === producto.producto_k)?.cantidad || 1}</span>
+                          <IonButton size="small" fill="solid" onClick={() => aumentar(producto.producto_k)} className="fruta-boton-contador">
+                            <IonIcon icon={addOutline} />
+                          </IonButton>
+                        </div>
+                      ) : (
+                        <IonButton className="fruta-btn-agregar" expand="block" onClick={() => handleAgregar(producto)}>
+                          <IonIcon icon={addOutline} slot="start" />
+                          Agregar
+                        </IonButton>
+                      )}
+                    </IonCardContent>
+                  </IonCard>
+                </IonCol>
+              );
+            })}
           </IonRow>
         </IonGrid>
       </IonContent>

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useCarrito } from '../../contexts/carritoContext';
 import { useHistory } from 'react-router-dom';
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
+import { clearUserSession, getUserRole } from '../../service/secureStorage';
 
 const FruticaDesktopHeader: React.FC = () => {
   const isMobile = useIsMobile();
@@ -12,6 +13,7 @@ const FruticaDesktopHeader: React.FC = () => {
   const { carrito } = useCarrito();
   const [codigoPostal, setCodigoPostal] = useState('00000');
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [rol, setRol] = useState<string | null>(null);
 
   useEffect(() => {
     const direccion = localStorage.getItem('direccionPredeterminada');
@@ -23,21 +25,28 @@ const FruticaDesktopHeader: React.FC = () => {
         console.error('Error al leer dirección predeterminada:', err);
       }
     }
+
+    getUserRole().then(setRol);
   }, []);
 
   const calcularTotal = () => {
     return carrito.reduce((total, p) => total + (p.precio * p.cantidad), 0).toFixed(2);
   };
-
-  const cerrarSesion = () => {
-    localStorage.removeItem('token');
+  const cerrarSesion = async () => {
+    // 1️⃣ Borra token seguro
+    await clearUserSession();
+  
+    // 2️⃣ Borra localStorage normal
     localStorage.removeItem('userEmail');
     localStorage.removeItem('role');
     localStorage.removeItem('userId');
     localStorage.removeItem('carrito');
     localStorage.removeItem('direccionPredeterminada');
+  
+    // 3️⃣ Redirige a login
+    history.push('/login'); // mejor '/login' que '/logout'
+    window.location.reload();
 
-    history.push('/logout');
   };
 
   if (isMobile) return null;
@@ -87,6 +96,22 @@ const FruticaDesktopHeader: React.FC = () => {
             <IonRouterLink routerLink="/perfil" className="bottom-link">
               <span className="material-icons icon-white">person</span>
             </IonRouterLink>
+
+            {rol === 'admin' && (
+              <>
+           <span
+  className="material-icons icon-white bottom-link"
+  style={{ cursor: 'pointer' }}
+  onClick={() => {
+    history.push('/admin/forms');
+    window.location.reload();
+  }}
+>
+  add_circle
+</span>
+
+              </>
+            )}
 
             {/* Cerrar sesión con confirmación */}
             <span className="material-icons icon-white bottom-link" style={{ cursor: 'pointer' }} onClick={() => setMostrarConfirmacion(true)}>

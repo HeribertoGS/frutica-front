@@ -1,159 +1,196 @@
-
-import React, { useState } from 'react';
-import { IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonImg, IonSegment, IonSegmentButton, IonLabel, IonIcon, } from '@ionic/react';
+import React, { useEffect, useState } from 'react';
+import {
+  IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
+  IonImg, IonSegment, IonSegmentButton, IonLabel, IonIcon,
+  IonItem, IonSelect, IonSelectOption, useIonToast
+} from '@ionic/react';
 import { add, remove } from 'ionicons/icons';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { useCarrito } from '../../contexts/carritoContext';
+import { agregarProductoAlCarrito, obtenerProductoPorId } from '../../service/api';
+import { useParams } from 'react-router-dom';
 
+interface ProductoCardProps {
+  id: number;
+}
 
-const ProductoCard: React.FC = () => {
-    // Estado para unidad de venta: 'pieza' o 'kg'
-    const [unidad, setUnidad] = useState<'pieza' | 'kg'>('pieza');
-    // Estado para cantidad seleccionada
-    const [cantidad, setCantidad] = useState(1);
-    // Estado para la imagen activa en vista escritorio
-    const [imagenActiva, setImagenActiva] = useState(0);
-    // Detectar si el dispositivo es móvil
-    const isMobile = useIsMobile();
+const ProductoCard: React.FC<ProductoCardProps> = ({ id }) => {
+  const [producto, setProducto] = useState<any>(null);
+  const [unidad, setUnidad] = useState<'pieza' | 'kg'>('pieza');
+  const [cantidad, setCantidad] = useState(1);
+  const [tamano, setTamano] = useState<'Chico' | 'Mediano' | 'Grande' | null>(null);
+  const [imagenActiva, setImagenActiva] = useState(0);
+  const [present] = useIonToast();
+  const isMobile = useIsMobile();
 
-    const imagenes = [
-        "https://www.mexicodesconocido.com.mx/wp-content/uploads/2019/09/mandarina.jpg",
-        "https://www.allnaturalbilbao.com/wp-content/uploads/2020/11/01284B58-8141-417D-BEBB-A1AC77C36734.jpeg",
-        "https://diarioroatan.com/wp-content/uploads/2018/10/mandarinas-1.jpg",
-        "https://super-masymas.com/wp-content/uploads/2021/01/tangerines-on-branch-scaled.jpg",
-        "https://cdn2.cocinadelirante.com/sites/default/files/styles/gallerie/public/filefield_paths/datos-sobre-la-mandarina-en-mexico-6_0.jpg",
-    ];
+  useEffect(() => {
+    const cargarProducto = async () => {
+      try {
+        const data = await obtenerProductoPorId(id);
+        setProducto(data);
+        if (data.unidad_venta) setUnidad(data.unidad_venta);
+      } catch (err) {
+        console.error('Error al obtener producto:', err);
+      }
+    };
+    cargarProducto();
+  }, [id]);
 
-    const producto = {
-        id: 99,
-        nombre: 'Mandarina',
-        precio: unidad === 'pieza' ? 6 : 30,
-        imagen: imagenes[0],
+  if (!producto) return <p style={{ textAlign: 'center' }}>Cargando producto...</p>;
+
+  const precio = unidad === 'kg' && producto.precio_por_kg
+    ? producto.precio_por_kg
+    : producto.precio_por_pieza || 0;
+
+  const pesoSeleccionado = producto.usa_tamano && tamano
+    ? tamano === 'Chico' ? producto.peso_chico
+      : tamano === 'Mediano' ? producto.peso_mediano
+      : producto.peso_grande
+    : null;
+
+  const precioFinal = cantidad * precio;
+
+  const handleAgregar = async () => {
+    try {
+      await agregarProductoAlCarrito({
+        productoId: producto.producto_k,
         cantidad,
-    };
+        tipo_medida: unidad,
+        tamano: producto.usa_tamano ? (tamano ?? undefined) : undefined,
+        peso_personalizado: undefined,
+      });
+  
+      present({
+        message: 'Producto agregado al carrito',
+        duration: 1200,
+        color: 'success',
+      });
+    } catch (err) {
+      console.error('❌ Error al agregar:', err);
+      present({
+        message: 'No se pudo agregar al carrito',
+        duration: 1500,
+        color: 'danger',
+      });
+    }
+  };
+  
 
-    const { agregarAlCarrito } = useCarrito();
+  const imagenes = producto.foto?.length ? producto.foto : [
+    'https://via.placeholder.com/500x300?text=Sin+imagen'
+  ];
 
+  return (
+    <div style={{ width: '100%', padding: '20px' }}>
+      <IonCard style={{ maxWidth: '1600px', margin: '0 auto', padding: '20px' }}>
+        <IonCardHeader style={{ textAlign: 'center' }}>
+          <IonCardTitle style={{ fontSize: '28px', fontWeight: 'bold' }}>{producto.nombre}</IonCardTitle>
+          <p style={{ fontSize: '14px', color: '#555' }}>{producto.descripcion || 'Sin descripción'}</p>
+        </IonCardHeader>
 
-    const precioFinal = producto.precio * cantidad;
+        {isMobile ? (
+          <>
+            <Swiper style={{ width: '100%', borderRadius: '12px', marginBottom: '10px', maxHeight: '320px' }}>
+              {imagenes.map((img: string, i: number) => (
+                <SwiperSlide key={i}>
+                  <IonImg src={img} alt={`img-${i}`} style={{ objectFit: 'cover', height: '280px' }} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
 
-    const handleAgregar = () => {
-        agregarAlCarrito(producto);
-    };
+            <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px' }}>
+              <p style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                {precio ? `$${precio} por ${unidad}` : 'Precio no disponible'}
+              </p>
 
-    return (
-        <div style={{ width: '100%', padding: '20px' }}>
-            <IonCard style={{ maxWidth: '1600px', margin: '0 auto', padding: '20px' }}>
-                <IonCardHeader style={{ textAlign: 'center' }}>
-                    <IonCardTitle style={{ fontSize: '28px', fontWeight: 'bold' }}>Mandarinas</IonCardTitle>
-                    <p style={{ fontSize: '14px', color: '#555' }}>
-                        Las mejores mandarinas de la ciudad de Huajuapan de León a la puerta de tu casa.
-                    </p>
-                </IonCardHeader>
+              <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
+                <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
+                <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
+              </IonSegment>
 
-                {isMobile ? (
-                    <>
-                        <Swiper style={{ width: '100%', borderRadius: '12px', marginBottom: '10px', maxHeight: '320px' }}>
-                            {imagenes.map((img, i) => (
-                                <SwiperSlide key={i}>
-                                    <IonImg src={img} alt={`Mandarina ${i + 1}`} style={{ objectFit: 'cover', height: '280px' }} />
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
+              {producto.usa_tamano && (
+                <IonItem>
+                  <IonLabel position="stacked">Tamaño</IonLabel>
+                  <IonSelect value={tamano} onIonChange={(e) => setTamano(e.detail.value)}>
+                    <IonSelectOption value="Chico">Chico</IonSelectOption>
+                    <IonSelectOption value="Mediano">Mediano</IonSelectOption>
+                    <IonSelectOption value="Grande">Grande</IonSelectOption>
+                  </IonSelect>
+                </IonItem>
+              )}
 
-                        <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '12px' }}>
-                            <p style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px' }}>
-                                {unidad === 'pieza' ? '$6.00 por pieza' : '$30.00 por kg'}
-                            </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '16px 0' }}>
+                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light"><IonIcon icon={remove} /></IonButton>
+                <span>{cantidad}</span>
+                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light"><IonIcon icon={add} /></IonButton>
+              </div>
 
-                            <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
-                                <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
-                                <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
-                            </IonSegment>
+              <IonButton expand="block" color="success" onClick={handleAgregar}>Agregar al carrito</IonButton>
+              <div style={{ marginTop: '10px', textAlign: 'right' }}><strong>Precio:</strong> ${precioFinal.toFixed(2)}</div>
+            </div>
+          </>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', maxHeight: '500px' }}>
+              {imagenes.map((img: string, i: number) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`thumb-${i}`}
+                  onClick={() => setImagenActiva(i)}
+                  style={{ width: 70, height: 70, objectFit: 'cover', border: i === imagenActiva ? '2px solid red' : '1px solid #ccc', borderRadius: '6px', cursor: 'pointer' }}
+                />
+              ))}
+            </div>
 
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', margin: '16px 0' }}>
-                                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light"><IonIcon icon={remove} /></IonButton>
-                                <span style={{ fontSize: '18px' }}>{cantidad}</span>
-                                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light"><IonIcon icon={add} /></IonButton>
-                            </div>
+            <div>
+              <img
+                src={imagenes[imagenActiva]}
+                alt="Producto grande"
+                style={{ borderRadius: '12px', maxWidth: '750px', maxHeight: '450px', width: '100%', objectFit: 'contain' }}
+              />
+              <div style={{ marginTop: '14px', fontSize: '15px', color: '#444' }}>
+                <p><strong>Proveedor:</strong> {producto.proveedor || 'Sin proveedor'}</p>
+                <p><strong>Unidad de venta:</strong> {producto.unidad_venta}</p>
+              </div>
+            </div>
 
-                            <div style={{ backgroundColor: '#ddd', padding: '8px', borderRadius: '8px', textAlign: 'center', marginBottom: '10px' }}>
-                                {unidad === 'pieza' ? `${cantidad} Pieza(s)` : `${cantidad} Kilogramo(s)`}
-                            </div>
+            <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '12px', width: '400px' }}>
+              <p style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                {precio ? `$${precio} por ${unidad}` : 'Precio no disponible'}
+              </p>
 
-                            <IonButton expand="block" color="success" onClick={handleAgregar}>Agregar al carrito</IonButton>
-                            <div style={{ marginTop: '10px', textAlign: 'right' }}>
-                                <strong>Precio:</strong> ${precioFinal.toFixed(2)}
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '20px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', maxHeight: '500px' }}>
-                            {imagenes.map((img, i) => (
-                                <img
-                                    key={i}
-                                    src={img}
-                                    alt={`thumb-${i}`}
-                                    onClick={() => setImagenActiva(i)}
-                                    style={{
-                                        width: 50,
-                                        height: 50,
-                                        objectFit: 'cover',
-                                        border: i === imagenActiva ? '2px solid red' : '1px solid #ccc',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                    }}
-                                />
-                            ))}
-                        </div>
+              <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
+                <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
+                <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
+              </IonSegment>
 
-                        <div>
-                            <img
-                                src={imagenes[imagenActiva]}
-                                alt="Producto grande"
-                                style={{ borderRadius: '12px', maxWidth: '750px', maxHeight: '450px', width: '100%', objectFit: 'contain' }}
-                            />
-                            <div style={{ marginTop: '14px', fontSize: '15px', color: '#444' }}>
-                                <p><strong>Color:</strong> Naranja</p>
-                                <p><strong>Proveedor:</strong> Huajuapan Market</p>
-                                <p><strong>Tamaño:</strong> Mediano</p>
-                            </div>
-                        </div>
+              {producto.usa_tamano && (
+                <IonItem>
+                  <IonLabel position="stacked">Tamaño</IonLabel>
+                  <IonSelect value={tamano} onIonChange={(e) => setTamano(e.detail.value)}>
+                    <IonSelectOption value="Chico">Chico</IonSelectOption>
+                    <IonSelectOption value="Mediano">Mediano</IonSelectOption>
+                    <IonSelectOption value="Grande">Grande</IonSelectOption>
+                  </IonSelect>
+                </IonItem>
+              )}
 
-                        <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '12px', width: '400px' }}>
-                            <p style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px' }}>
-                                {unidad === 'pieza' ? '$6.00 por pieza' : '$30.00 por kg'}
-                            </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '16px 0' }}>
+                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light"><IonIcon icon={remove} /></IonButton>
+                <span>{cantidad}</span>
+                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light"><IonIcon icon={add} /></IonButton>
+              </div>
 
-                            <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
-                                <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
-                                <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
-                            </IonSegment>
-
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', margin: '16px 0' }}>
-                                <IonButton onClick={() => setCantidad(Math.max(1, cantidad - 1))} color="light"><IonIcon icon={remove} /></IonButton>
-                                <span style={{ fontSize: '18px' }}>{cantidad}</span>
-                                <IonButton onClick={() => setCantidad(cantidad + 1)} color="light"><IonIcon icon={add} /></IonButton>
-                            </div>
-
-                            <div style={{ backgroundColor: '#ddd', padding: '8px', borderRadius: '8px', textAlign: 'center', marginBottom: '10px' }}>
-                                {unidad === 'pieza' ? `${cantidad} Pieza(s)` : `${cantidad} Kilogramo(s)`}
-                            </div>
-
-                            <IonButton expand="block" color="success" onClick={handleAgregar}>Agregar al carrito</IonButton>
-
-                            <div style={{ marginTop: '10px', textAlign: 'right' }}>
-                                <strong>Precio:</strong> ${precioFinal.toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </IonCard>
-        </div>
-    );
+              <IonButton expand="block" color="success" onClick={handleAgregar}>Agregar al carrito</IonButton>
+              <div style={{ marginTop: '10px', textAlign: 'right' }}><strong>Precio:</strong> ${precioFinal.toFixed(2)}</div>
+            </div>
+          </div>
+        )}
+      </IonCard>
+    </div>
+  );
 };
 
 export default ProductoCard;

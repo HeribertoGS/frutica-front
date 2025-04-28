@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './ofertas.css';
 import {
     IonButton,
@@ -6,49 +6,41 @@ import {
     IonGrid,
     IonRow,
     IonCol,
+    useIonToast
 } from '@ionic/react';
 import { addOutline } from 'ionicons/icons';
 import FruticaLayout from '../../components/Layout/FruticaLayout';
 import { useCarrito } from '../../contexts/carritoContext';
-
-const productosOferta = [
-    {
-        id: 101,
-        nombre: 'Aguacate',
-        precio: 45.0,
-        unidad: 'KG',
-        descuento: '50%',
-        imagen: 'https://th.bing.com/th/id/R.d3522258fc2709b794e19d55ab0b4a43?rik=7tMcgAfAz7G3Kw&pid=ImgRaw&r=0',
-    },
-    {
-        id: 102,
-        nombre: 'Ajo 1ra',
-        precio: 45.0,
-        unidad: 'KG',
-        descuento: '50%',
-        imagen: 'https://tse4.mm.bing.net/th/id/OIP.od9GN6cMBZl0uuYQrJT9VQHaE4?rs=1&pid=ImgDetMain',
-    },
-    {
-        id: 103,
-        nombre: 'Papaya',
-        precio: 45.0,
-        unidad: 'KG',
-        descuento: '50%',
-        imagen: 'https://healthjade.com/wp-content/uploads/2017/12/Papaya.jpg',
-    },
-];
+import { obtenerOfertasActivas } from '../../service/api'; // <- 👈 conectamos API
 
 const Ofertas: React.FC = () => {
     const { agregarAlCarrito } = useCarrito();
+    const [ofertas, setOfertas] = useState<any[]>([]);
+    const [present] = useIonToast();
+
+    useEffect(() => {
+        const cargarOfertas = async () => {
+            try {
+                const data = await obtenerOfertasActivas();
+                setOfertas(data);
+            } catch (error) {
+                console.error('❌ Error al cargar ofertas:', error);
+                present({ message: 'Error al cargar ofertas', duration: 2000, color: 'danger' });
+            }
+        };
+
+        cargarOfertas();
+    }, []);
 
     const handleAgregar = (producto: any) => {
         agregarAlCarrito({
-            id: producto.id,
-            nombre: producto.nombre,
-            precio: producto.precio,
-            imagen: producto.imagen,
+            id: producto.producto.producto_k,
+            nombre: producto.producto.nombre,
+            precio: producto.precio_oferta,
+            imagen: producto.producto.foto?.[0] || '',
             cantidad: 1,
         });
+        present({ message: 'Producto agregado al carrito', duration: 1200, color: 'success' });
     };
 
     return (
@@ -57,27 +49,29 @@ const Ofertas: React.FC = () => {
                 <h2 className="ofertas-titulo-principal">Mejores ofertas</h2>
                 <IonGrid className="ofertas-product-grid">
                     <IonRow>
-                        {productosOferta.map((producto, index) => (
+                        {ofertas.map((oferta, index) => (
                             <IonCol key={index} size="12" size-sm="6" size-md="4" size-lg="2">
                                 <div className="ofertas-product-card">
                                     <img
-                                        src={producto.imagen}
-                                        alt={producto.nombre}
+                                        src={oferta.producto.foto?.[0] || 'https://via.placeholder.com/150'}
+                                        alt={oferta.producto.nombre}
                                         className="ofertas-product-img"
                                     />
 
                                     <div className="ofertas-product-info">
                                         <div className="fruta-title-heart">
-                                            <div className="ofertas-product-title">{producto.nombre}</div>
+                                            <div className="ofertas-product-title">{oferta.producto.nombre}</div>
                                         </div>
                                         <p className="ofertas-product-local">Local: Frutica</p>
-                                        <div className="ofertas-product-descuento">-{producto.descuento}</div>
-                                        <p className="ofertas-product-price">${producto.precio.toFixed(2)}/{producto.unidad}</p>
+                                        <div className="ofertas-product-descuento">-{oferta.porcentaje_descuento || 0}%</div>
+                                        <p className="ofertas-product-price">
+                                            ${oferta.precio_oferta.toFixed(2)}/{oferta.producto.unidad_venta}
+                                        </p>
 
                                         <IonButton
                                             size="small"
                                             className="ofertas-btn-agregar"
-                                            onClick={() => handleAgregar(producto)}
+                                            onClick={() => handleAgregar(oferta)}
                                         >
                                             <IonIcon icon={addOutline} slot="start" />
                                             Agregar

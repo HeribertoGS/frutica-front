@@ -4,27 +4,86 @@ import {
   IonModal
 } from '@ionic/react';
 import { trashOutline, add, remove } from 'ionicons/icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Carrito.css';
 import FruticaLayout from '../../components/Layout/FruticaLayout';
-import { useCarrito } from '../../contexts/carritoContext';
 import { useHistory } from 'react-router-dom';
+import { obtenerCarritoUsuario, editarProductoCarrito, eliminarProductoCarrito, vaciarCarritoUsuario } from '../../service/api';
+import { useIonToast } from '@ionic/react';
 
 const Carrito: React.FC = () => {
-  const { carrito, eliminarDelCarrito, actualizarCantidad } = useCarrito();
   const history = useHistory();
+  const [carrito, setCarrito] = useState<any[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [present] = useIonToast();
 
-  const aumentar = (id: number, actual: number) => {
-    actualizarCantidad(id, actual + 1);
+  useEffect(() => {
+    cargarCarrito();
+  }, []);
+
+  const cargarCarrito = async () => {
+    try {
+      const data = await obtenerCarritoUsuario();
+      setCarrito(data.items || []);
+    } catch (err) {
+      console.error('❌ Error al cargar carrito:', err);
+    }
   };
 
-  const disminuir = (id: number, actual: number) => {
-    if (actual > 1) actualizarCantidad(id, actual - 1);
+  const aumentar = async (item: any) => {
+    try {
+      await editarProductoCarrito(
+        item.producto.producto_k,
+        item.cantidad + 1,
+        item.tipo_medida,
+        item.producto.usa_tamano ? (item.tamano || 'Mediano') : undefined,
+        item.peso_seleccionado || undefined
+      );
+      cargarCarrito();
+    } catch (err) {
+      console.error('❌ Error al aumentar cantidad:', err);
+    }
+  };
+
+  const disminuir = async (item: any) => {
+    if (item.cantidad > 1) {
+      try {
+        await editarProductoCarrito(
+          item.producto.producto_k,
+          item.cantidad - 1,
+          item.tipo_medida,
+          item.producto.usa_tamano ? (item.tamano || 'Mediano') : undefined,
+          item.peso_seleccionado || undefined
+        );
+        cargarCarrito();
+      } catch (err) {
+        console.error('❌ Error al disminuir cantidad:', err);
+      }
+    }
+  };
+
+  const eliminar = async (productoId: number) => {
+    try {
+      await eliminarProductoCarrito(productoId);
+      present({ message: 'Producto eliminado del carrito', duration: 1200, color: 'danger' });
+      cargarCarrito();
+    } catch (err) {
+      console.error('❌ Error al eliminar producto:', err);
+    }
+  };
+
+  const vaciarCarrito = async () => {
+    try {
+      await vaciarCarritoUsuario();
+      present({ message: 'Carrito vaciado exitosamente', duration: 1200, color: 'danger' });
+      cargarCarrito();
+    } catch (err) {
+      console.error('❌ Error al vaciar carrito:', err);
+    }
   };
 
   const calcularTotal = () => {
-    return carrito.reduce((total, p) => total + (p.precio * p.cantidad), 0).toFixed(2);
+    return carrito.reduce((total, p) => total + (p.precio_total || 0), 0).toFixed(2);
   };
 
   const seleccionarTipoEntrega = (tipo: string) => {
@@ -39,36 +98,39 @@ const Carrito: React.FC = () => {
         <h2 className="carrito-titulo">Carrito de compras</h2>
         <div className="carrito-grid">
           <div className="carrito-lista">
-            {carrito.map((p, i) => (
+            {carrito.length > 0 ? carrito.map((p) => (
               <div className="carrito-item" key={p.id}>
-                <img src={p.imagen} className="carrito-imagen" alt={p.nombre} />
-
+                <img
+                  src={p.producto.foto?.[0] || 'https://via.placeholder.com/150'}
+                  className="carrito-imagen"
+                  alt={p.producto.nombre}
+                />
                 <div className="carrito-detalle">
-                  <h3>{p.nombre}</h3>
-                  <p>
-                    Disfruta de nuestras {p.nombre.toLowerCase()} frescas, sin conservantes. Perfectas para snacks y postres.
-                  </p>
+                  <h3>{p.producto.nombre}</h3>
+                  <p>{p.producto.descripcion || 'Producto fresco de la mejor calidad.'}</p>
 
                   <div className="carrito-precio-box">
-                    <strong>${p.precio}.00/KG</strong>
+                    <strong>${(p.precio_total / p.cantidad).toFixed(2)} por {p.tipo_medida}</strong>
 
                     <div className="carrito-controles">
-                      <IonButton fill="solid" className="contador-boton" onClick={() => disminuir(p.id, p.cantidad)}>
+                      <IonButton fill="solid" className="contador-boton" onClick={() => disminuir(p)}>
                         <IonIcon icon={remove} />
                       </IonButton>
                       <span className="contador-numero">{p.cantidad}</span>
-                      <IonButton fill="solid" className="contador-boton" onClick={() => aumentar(p.id, p.cantidad)}>
+                      <IonButton fill="solid" className="contador-boton" onClick={() => aumentar(p)}>
                         <IonIcon icon={add} />
                       </IonButton>
                     </div>
 
-                    <IonButton fill="solid" className="eliminar-boton" onClick={() => eliminarDelCarrito(p.id)}>
+                    <IonButton fill="solid" className="eliminar-boton" onClick={() => eliminar(p.producto.producto_k)}>
                       <IonIcon icon={trashOutline} />
                     </IonButton>
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p style={{ textAlign: 'center', width: '100%' }}>Tu carrito está vacío</p>
+            )}
           </div>
 
           <div className="carrito-resumen">
@@ -82,6 +144,7 @@ const Carrito: React.FC = () => {
               <strong>Total</strong>
               <strong>${calcularTotal()}</strong>
             </div>
+
             <IonButton
               expand="block"
               className="btn-rojoo"
@@ -89,6 +152,17 @@ const Carrito: React.FC = () => {
               onClick={() => setMostrarModal(true)}
             >
               IR A PAGAR
+            </IonButton>
+
+            <IonButton
+              expand="block"
+              color="danger"
+              className="btn-vaciar"
+              onClick={vaciarCarrito}
+              style={{ marginTop: '10px' }}
+              disabled={carrito.length === 0}
+            >
+              Vaciar carrito
             </IonButton>
           </div>
         </div>
@@ -104,10 +178,10 @@ const Carrito: React.FC = () => {
         <div className="modal-contenido2">
           <h3>Selecciona forma de entrega</h3>
           <IonButton className="btn-entrega" onClick={() => seleccionarTipoEntrega('domicilio')}>
-            <span className="icono-entrega">🚛</span> Entrega a domicilio
+            🚛 Entrega a domicilio
           </IonButton>
           <IonButton className="btn-entrega" onClick={() => seleccionarTipoEntrega('recoger')}>
-            <span className="icono-entrega">🧍‍♂️</span> Pasar a recoger
+            🧍‍♂️ Pasar a recoger
           </IonButton>
         </div>
       </IonModal>

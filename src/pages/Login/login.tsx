@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import '../Register/Register.css';
 import LogoFrutica from '../../assets/img/logofrutica.png';
+import { loginUsuario } from '../../service/api';
+import { saveUserSession } from '../../service/secureStorage';
+import jwtDecode from 'jwt-decode';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -12,7 +15,7 @@ const Login: React.FC = () => {
 
     const togglePassword = () => setShowPassword(!showPassword);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!email || !password) {
@@ -26,8 +29,15 @@ const Login: React.FC = () => {
             return;
         }
 
-        setError('');
-        history.push('/fruta');
+        try {
+            const res = await loginUsuario(email, password);
+            await saveUserSession(res.jwtToken, res.role);
+            console.log('Sesión iniciada como:', res.role);
+            history.push('/fruta');
+        } catch (err: any) {
+            console.error('Error al iniciar sesión:', err);
+            setError(err.message || 'Error en el inicio de sesión');
+        }
     };
 
     return (

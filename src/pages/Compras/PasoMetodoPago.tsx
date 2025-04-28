@@ -1,5 +1,6 @@
 import { IonButton, IonModal } from "@ionic/react";
 import { useEffect, useState } from "react";
+import { obtenerFormasPagoActivas } from "../../service/api";
 import "./Compra.css";
 
 interface Props {
@@ -7,20 +8,43 @@ interface Props {
   onBack: () => void;
 }
 
+interface FormaPago {
+  forma_k: number;
+  nombre_forma: string;
+}
+
 const PasoMetodoPago: React.FC<Props> = ({ onNext, onBack }) => {
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [metodoPago, setMetodoPago] = useState("");
+  const [metodoPagoId, setMetodoPagoId] = useState<number | null>(null);
+  const [metodoPagoNombre, setMetodoPagoNombre] = useState<string>("");
+  const [formasPago, setFormasPago] = useState<FormaPago[]>([]);
 
   useEffect(() => {
-    const metodoGuardado = localStorage.getItem("metodo_pago");
-    if (metodoGuardado) {
-      setMetodoPago(metodoGuardado);
+    const cargarFormasPago = async () => {
+      try {
+        const data = await obtenerFormasPagoActivas();
+        setFormasPago(data);
+      } catch (error) {
+        console.error("❌ Error al cargar formas de pago:", error);
+      }
+    };
+
+    const metodoGuardadoId = localStorage.getItem("forma_pago_id");
+    const metodoGuardadoNombre = localStorage.getItem("forma_pago_nombre");
+
+    if (metodoGuardadoId && metodoGuardadoNombre) {
+      setMetodoPagoId(Number(metodoGuardadoId));
+      setMetodoPagoNombre(metodoGuardadoNombre);
     }
+
+    cargarFormasPago();
   }, []);
 
-  const seleccionarMetodoPago = (metodo: string) => {
-    setMetodoPago(metodo);
-    localStorage.setItem("metodo_pago", metodo);
+  const seleccionarMetodoPago = (forma: FormaPago) => {
+    setMetodoPagoId(forma.forma_k);
+    setMetodoPagoNombre(forma.nombre_forma);
+    localStorage.setItem("forma_pago_id", forma.forma_k.toString());
+    localStorage.setItem("forma_pago_nombre", forma.nombre_forma);
     setMostrarModal(false);
   };
 
@@ -32,18 +56,24 @@ const PasoMetodoPago: React.FC<Props> = ({ onNext, onBack }) => {
         Elegir método de pago
       </IonButton>
 
-      {metodoPago && (
+      {metodoPagoNombre && (
         <p style={{ textAlign: "center", marginTop: "16px" }}>
-          Método seleccionado: <strong>{metodoPago}</strong>
+          Método seleccionado: <strong>{metodoPagoNombre}</strong>
         </p>
       )}
-        <div className="detalle-productos">
-          <button className="btn-modificar" onClick={onBack} >
-          Regresar
-        </button>            
-        <button className="btn-ver-productos" onClick={onNext} disabled={!metodoPago}>Continuar</button>
-          </div>
 
+      <div className="detalle-productos">
+        <button className="btn-modificar" onClick={onBack}>
+          Regresar
+        </button>
+        <button 
+          className="btn-ver-productos" 
+          onClick={onNext} 
+          disabled={!metodoPagoId}
+        >
+          Continuar
+        </button>
+      </div>
 
       <IonModal
         isOpen={mostrarModal}
@@ -52,27 +82,16 @@ const PasoMetodoPago: React.FC<Props> = ({ onNext, onBack }) => {
       >
         <div className="modal-contenido2">
           <h3>Selecciona forma de pago</h3>
-          <IonButton
-  className="btn-entrega"
-  onClick={() => seleccionarMetodoPago("Efectivo")}
->
-  💸 Efectivo
-</IonButton>
 
-<IonButton
-  className="btn-entrega"
-  onClick={() => seleccionarMetodoPago("Transferencia")}
->
-  🪙 Transferencia
-</IonButton>
-
-<IonButton
-  className="btn-entrega"
-  onClick={() => seleccionarMetodoPago("Tarjeta")}
->
-  💳 Tarjeta (Stripe)
-</IonButton>
-
+          {formasPago.map((forma) => (
+            <IonButton 
+              key={forma.forma_k}
+              className="btn-entrega" 
+              onClick={() => seleccionarMetodoPago(forma)}
+            >
+              {forma.nombre_forma}
+            </IonButton>
+          ))}
         </div>
       </IonModal>
     </div>

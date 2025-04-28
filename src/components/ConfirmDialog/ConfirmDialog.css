@@ -36,3 +36,29 @@
     color: #444;
   }
   
+  .btn-verdee {
+    margin-top: 4px;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    margin-left: 10px;
+  }
+  
+  .btn-confirmar {
+    margin-top: 12px;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+  }

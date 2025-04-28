@@ -1,6 +1,7 @@
 .carrito-container {
     padding: 20px;
-}
+    
+  }
 
 .carrito-titulo {
     text-align: center;
@@ -134,34 +135,25 @@
     margin-top: 20px;
 }
 
-/* ==== RESPONSIVO PARA MÓVIL ==== */
+/* Mobile responsive */
 @media (max-width: 768px) {
     .carrito-grid {
-        flex-direction: column;
+      flex-direction: column;
+      align-items: center;
     }
-
+    .carrito-lista, .carrito-resumen {
+      width: 100%;
+    }
     .carrito-item {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
     }
-
     .carrito-imagen {
-        width: 100%;
-        max-width: 150px;
+      width: 150px;
+      height: 150px;
     }
-
-    .carrito-precio-box {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .carrito-resumen {
-        position: static;
-        width: 100%;
-        margin-top: 24px;
-    }
-}
+  }
 
 .btn-rojoo{
     --background: #D32F2F;

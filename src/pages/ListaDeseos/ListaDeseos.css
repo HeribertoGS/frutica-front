@@ -26,3 +26,13 @@
     }
 }
 
+.fruta-heart-icon {
+    font-size: 24px;
+    color: orange;
+    transition: transform 0.3s, color 0.3s;
+  }
+  
+  .fruta-heart-icon.relleno {
+    color: #FFB347;
+    transform: scale(1.2);
+  }

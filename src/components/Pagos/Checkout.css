@@ -1,0 +1,18 @@
+.stripe-form {
+    margin-top: 20px;
+  }
+  
+  .stripe-card {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 16px;
+  }
+  
+  .stripe-mensaje {
+    margin-top: 12px;
+    text-align: center;
+    font-weight: bold;
+    color: #2e7d32; /* verde bonito */
+  }

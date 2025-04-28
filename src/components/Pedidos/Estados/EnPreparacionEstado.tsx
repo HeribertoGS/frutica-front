@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom'; // 👈 Importar useHistory
+import { useHistory } from 'react-router-dom';
+import { cambiarEstadoPedido } from '../../../service/api'; // Importamos el servicio
 import '../Detalles.css';
 import ModalProductos from '../../ModalProductos/ModalProductos';
 import ConfirmDialog from '../../ConfirmDialog/ConfirmDialog';
@@ -10,6 +11,7 @@ interface Producto {
   precio: number;
   img: string;
 }
+
 interface Props {
   pedido: {
     id: number;
@@ -27,11 +29,18 @@ interface Props {
 const EnPreparacionEstado: React.FC<Props> = ({ pedido }) => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
-  const history = useHistory(); // 👈 Hook de navegación
+  const history = useHistory();
 
-  const cancelarPedido = () => {
+  const cancelarPedido = async () => {
     setMostrarConfirmacion(false);
-    console.log('✅ Pedido cancelado');
+    try {
+      await cambiarEstadoPedido(pedido.id, 'cancelado'); //  Ahora sí cambia en el backend
+      alert('✅ Pedido cancelado exitosamente');
+      window.location.reload(); //  Opcional: recarga la página para ver cambios
+    } catch (error) {
+      console.error('❌ Error al cancelar el pedido:', error);
+      alert('Error al cancelar pedido');
+    }
   };
 
   const irAMensajes = () => {
@@ -41,8 +50,10 @@ const EnPreparacionEstado: React.FC<Props> = ({ pedido }) => {
   return (
     <div className="detalle-contenedor">
       <div className="detalle-card">
-        <div className="detalle-id"><span>Pedido:</span> <span>#{pedido.id}</span></div>
-        <img src="src/assets/img/preparacion.png" alt="En preparación" className="detalle-img" />
+        <div className="detalle-id">
+          <span>Pedido:</span> <span>#{pedido.id}</span>
+        </div>
+        <img src="src\assets\img\Preparacion.png" alt="En preparación" className="detalle-img" />
         <div className="detalle-estado">En preparación</div>
 
         <div className="barra-progreso-container">
@@ -52,7 +63,9 @@ const EnPreparacionEstado: React.FC<Props> = ({ pedido }) => {
         </div>
 
         <div className="barra-boton-cancelar">
-          <button className="btn-cancelar" onClick={() => setMostrarConfirmacion(true)}>Cancelar</button>
+          <button className="btn-cancelar" onClick={() => setMostrarConfirmacion(true)}>
+            Cancelar pedido
+          </button>
         </div>
       </div>
 
@@ -68,15 +81,19 @@ const EnPreparacionEstado: React.FC<Props> = ({ pedido }) => {
           </span>
         </p>
         <p><span>Total:</span> <span className="detalle-total">${pedido.total}.00</span></p>
+
         <div className="detalle-productos">
-          <button className="btn-modificar">Modificar detalles</button>
           <button className="btn-ver-productos" onClick={() => setMostrarModal(true)}>
             Ver productos
           </button>
         </div>
       </div>
 
-      <button className="btn-ver-productos verde" style={{ marginTop: '12px' }} onClick={irAMensajes}>
+      <button
+        className="btn-ver-productos verde"
+        style={{ marginTop: '12px' }}
+        onClick={irAMensajes}
+      >
         Enviar mensaje
       </button>
 

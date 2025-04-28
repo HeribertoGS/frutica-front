@@ -4,14 +4,16 @@ import {
     IonSelectOption, IonToggle, IonList, IonText
 } from '@ionic/react';
 import './productosCrear.css';
+import { crearProducto, obtenerCategorias } from '../../service/api';
 
 interface ProductoFormData {
     codigo_producto?: string;
     nombre: string;
     descripcion?: string;
-    foto?: string;
+    foto?: string[];
     unidad_venta: "kg" | "pieza";
-    precio_estimado: number;
+    precio_por_kg?: number;
+    precio_por_pieza?: number;
     peso_estimado?: number;
     total_existencias?: number;
     activo?: boolean;
@@ -24,10 +26,11 @@ interface ProductoFormData {
     peso_chico?: number;
     peso_mediano?: number;
     peso_grande?: number;
+    categoriaCategoriaK?: number;
 }
 
 interface ProductosCrearProps {
-    onGuardar: (data: any) => void;
+    onGuardar: (producto: ProductoFormData, fotos: File[]) => void;
     registroEditar?: ProductoFormData | null;
 }
 
@@ -35,20 +38,33 @@ const ProductosCrear: React.FC<ProductosCrearProps> = ({ onGuardar, registroEdit
     const [form, setForm] = useState<ProductoFormData>({
         nombre: '',
         unidad_venta: 'kg',
-        precio_estimado: 0,
         activo: true,
         requiere_pesaje: false,
         usa_tamano: false,
         variaciones_precio: false,
     });
 
+    const [imagenes, setImagenes] = useState<File[]>([]);
+    const [errores, setErrores] = useState<{ [key: string]: string }>({});
+    const [categorias, setCategorias] = useState<any[]>([]);
+
+    useEffect(() => {
+        const cargarCategorias = async () => {
+            try {
+                const data = await obtenerCategorias();
+                setCategorias(data);
+            } catch (err) {
+                console.error('❌ Error al cargar categorías:', err);
+            }
+        };
+        cargarCategorias();
+    }, []);
+
     useEffect(() => {
         if (registroEditar) {
             setForm(registroEditar);
         }
     }, [registroEditar]);
-
-    const [errores, setErrores] = useState<{ [key: string]: string }>({});
 
     const handleChange = (e: CustomEvent) => {
         const name = (e.target as HTMLInputElement).name;
@@ -66,7 +82,10 @@ const ProductosCrear: React.FC<ProductosCrearProps> = ({ onGuardar, registroEdit
     const validarFormulario = (): boolean => {
         const nuevosErrores: { [key: string]: string } = {};
         if (!form.nombre?.trim()) nuevosErrores.nombre = 'El nombre es obligatorio';
-        if (!form.precio_estimado || form.precio_estimado <= 0) nuevosErrores.precio_estimado = 'El precio debe ser mayor a 0';
+        if (!form.categoriaCategoriaK) nuevosErrores.categoriaCategoriaK = 'Selecciona una categoría';
+        if (!form.precio_por_kg && !form.precio_por_pieza) {
+            nuevosErrores.precio = 'Debes ingresar al menos precio por kg o precio por pieza';
+        }
         if (form.requiere_pesaje && (!form.peso_estimado || form.peso_estimado <= 0)) {
             nuevosErrores.peso_estimado = 'Se requiere un peso estimado válido';
         }
@@ -74,22 +93,32 @@ const ProductosCrear: React.FC<ProductosCrearProps> = ({ onGuardar, registroEdit
         return Object.keys(nuevosErrores).length === 0;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (validarFormulario()) {
-            console.log('🟢 Producto válido:', form);
-            onGuardar({ ...form });
+            try {
+                const productoFinal = {
+                    ...form,
+                    foto: [] // placeholder
+                };
 
-            // Limpiar si no es edición
-            if (!registroEditar) {
-                setForm({
-                    nombre: '',
-                    unidad_venta: 'kg',
-                    precio_estimado: 0,
-                    activo: true,
-                    requiere_pesaje: false,
-                    usa_tamano: false,
-                    variaciones_precio: false,
-                });
+                const res = await crearProducto(productoFinal, imagenes);
+                console.log('✅ Producto guardado en BD:', res);
+
+                onGuardar(res, imagenes);
+
+                if (!registroEditar) {
+                    setForm({
+                        nombre: '',
+                        unidad_venta: 'kg',
+                        activo: true,
+                        requiere_pesaje: false,
+                        usa_tamano: false,
+                        variaciones_precio: false,
+                    });
+                    setImagenes([]);
+                }
+            } catch (err) {
+                console.error('❌ Error al guardar producto:', err);
             }
         }
     };
@@ -105,10 +134,32 @@ const ProductosCrear: React.FC<ProductosCrearProps> = ({ onGuardar, registroEdit
                 {errores.nombre && <IonText color="danger"><p className="form-prod-error">{errores.nombre}</p></IonText>}
 
                 <IonItem>
-                    <IonLabel position="stacked">Precio estimado *</IonLabel>
-                    <IonInput type="number" name="precio_estimado" value={form.precio_estimado} onIonChange={handleChange} className="form-prod-input" />
+                    <IonLabel position="stacked">Categoría *</IonLabel>
+                    <IonSelect
+                        name="categoriaCategoriaK"
+                        value={form.categoriaCategoriaK}
+                        onIonChange={handleChange}
+                        className="form-prod-select"
+                    >
+                        {categorias.map((cat) => (
+                            <IonSelectOption key={cat.categoria_k} value={cat.categoria_k}>
+                                {cat.nombre}
+                            </IonSelectOption>
+                        ))}
+                    </IonSelect>
                 </IonItem>
-                {errores.precio_estimado && <IonText color="danger"><p className="form-prod-error">{errores.precio_estimado}</p></IonText>}
+                {errores.categoriaCategoriaK && <IonText color="danger"><p className="form-prod-error">{errores.categoriaCategoriaK}</p></IonText>}
+
+                <IonItem>
+                    <IonLabel position="stacked">Precio por kg (opcional)</IonLabel>
+                    <IonInput type="number" name="precio_por_kg" value={form.precio_por_kg ?? ''} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
+
+                <IonItem>
+                    <IonLabel position="stacked">Precio por pieza (opcional)</IonLabel>
+                    <IonInput type="number" name="precio_por_pieza" value={form.precio_por_pieza ?? ''} onIonChange={handleChange} className="form-prod-input" />
+                </IonItem>
+                {errores.precio && <IonText color="danger"><p className="form-prod-error">{errores.precio}</p></IonText>}
 
                 <IonItem>
                     <IonLabel position="stacked">Unidad de venta</IonLabel>
@@ -124,8 +175,10 @@ const ProductosCrear: React.FC<ProductosCrearProps> = ({ onGuardar, registroEdit
                 </IonItem>
 
                 <IonItem>
-                    <IonLabel position="stacked">Foto (URL)</IonLabel>
-                    <IonInput name="foto" value={form.foto ?? ''} onIonChange={handleChange} className="form-prod-input" />
+                    <IonLabel position="stacked">Fotos</IonLabel>
+                    <input type="file" multiple accept="image/*" onChange={(e) => {
+                        if (e.target.files) setImagenes(Array.from(e.target.files));
+                    }} />
                 </IonItem>
 
                 <IonItem>

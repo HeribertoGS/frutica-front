@@ -1,6 +1,8 @@
 import { IonButton, IonIcon } from "@ionic/react";
 import { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { locationOutline, calendarOutline } from "ionicons/icons";
+import { obtenerDireccionPredeterminada, obtenerDireccionPublica } from "../../service/api";
 import "./Compra.css";
 
 interface Props {
@@ -8,22 +10,6 @@ interface Props {
   onBack: () => void;
 }
 
-// Generador de fechas
-const obtenerFechas = () => {
-  const hoy = new Date();
-  return Array.from({ length: 3 }, (_, i) => {
-    const fecha = new Date();
-    fecha.setDate(hoy.getDate() + i);
-    const dia = fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit" });
-    const nombre = i === 0 ? "Hoy" : fecha.toLocaleDateString("es-MX", { weekday: "long" });
-    return {
-      dia,
-      nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1),
-    };
-  });
-};
-
-// 🕐 Horarios disponibles
 const horas = [
   "09:00 am - 12:00 pm",
   "12:00 pm - 15:00 pm",
@@ -31,25 +17,77 @@ const horas = [
 ];
 
 const PasoFechaHoraDireccion: React.FC<Props> = ({ onNext, onBack }) => {
-  const fechas = obtenerFechas();
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(fechas[0].dia);
+  const history = useHistory();
+  const [fechaSeleccionada, setFechaSeleccionada] = useState("");
   const [horaSeleccionada, setHoraSeleccionada] = useState("");
   const [tipoEntrega, setTipoEntrega] = useState<"domicilio" | "recoger">("domicilio");
+  const [direccionActual, setDireccionActual] = useState<string>("");
+  const [mapsUrl, setMapsUrl] = useState<string>("");
 
   useEffect(() => {
-    const tipo = localStorage.getItem("tipo_entrega");
-    setTipoEntrega(tipo === "recoger" ? "recoger" : "domicilio");
-  }, [window.location.search]);
+    const cargarDatos = async () => {
+      const tipo = localStorage.getItem("tipo_entrega");
+      setTipoEntrega(tipo === "recoger" ? "recoger" : "domicilio");
+
+      try {
+        if (tipo === "recoger") {
+          const dir = await obtenerDireccionPublica();
+          const direccionCompleta = `${dir.calle} ${dir.numero}, ${dir.colonia}, ${dir.municipio}, ${dir.estado}, CP ${dir.cp}`;
+          setDireccionActual(direccionCompleta);
+          localStorage.setItem("direccion_id", dir.direccion_k.toString());
+          localStorage.setItem("direccion_texto", direccionCompleta);
+          setMapsUrl(dir.maps_url || "");
+        } else {
+          const dir = await obtenerDireccionPredeterminada();
+          const direccionCompleta = `${dir.calle} ${dir.numero}, ${dir.colonia}, ${dir.municipio}, ${dir.estado}, CP ${dir.cp}`;
+          setDireccionActual(direccionCompleta);
+          localStorage.setItem("direccion_id", dir.direccion_k.toString());
+          localStorage.setItem("direccion_texto", direccionCompleta);
+        }
+      } catch (error) {
+        console.error("Error cargando dirección", error);
+      }
+    };
+
+    const hoy = new Date();
+    const fechaISO = hoy.toISOString().split('T')[0];
+    setFechaSeleccionada(fechaISO);
+
+    cargarDatos();
+  }, []);
+
+  const seleccionarFechaHora = () => {
+    localStorage.setItem('fecha_entrega', fechaSeleccionada);
+    localStorage.setItem('hora_entrega', horaSeleccionada);
+    onNext();
+  };
+
+  const cambiarUbicacion = () => {
+    localStorage.setItem('volver_a_compra', 'true');
+    window.location.href = '/direcciones?origen=compra';
+  };
+
+  const verUbicacionMapa = () => {
+    if (mapsUrl) {
+      window.open(mapsUrl, '_blank');
+    }
+  };
+
+  const obtenerFechas = () => {
+    const hoy = new Date();
+    return Array.from({ length: 3 }, (_, i) => {
+      const fecha = new Date(hoy);
+      fecha.setDate(hoy.getDate() + i);
+      return fecha.toISOString().split('T')[0];
+    });
+  };
 
   return (
     <div className="pantalla-compra">
       <h2 className="titulo-pantalla">
-        {tipoEntrega === "domicilio"
-          ? "Ingresa fecha, hora y dirección para la entrega"
-          : "Hora y día para recoger la compra"}
+        {tipoEntrega === "domicilio" ? "Fecha, hora y dirección para entrega" : "Fecha y hora para recoger"}
       </h2>
 
-      {/* Fecha y hora */}
       <div className="selector-fecha-hora">
         <div className="subtitulos">
           <IonIcon icon={calendarOutline} style={{ fontSize: 22, marginRight: 8 }} />
@@ -57,64 +95,57 @@ const PasoFechaHoraDireccion: React.FC<Props> = ({ onNext, onBack }) => {
         </div>
 
         <div className="dias">
-          {fechas.map((f) => (
+          {obtenerFechas().map((fecha) => (
             <button
-              key={f.dia}
-              className={fechaSeleccionada === f.dia ? "activo" : ""}
-              onClick={() => setFechaSeleccionada(f.dia)}
+              key={fecha}
+              className={fechaSeleccionada === fecha ? "activo" : ""}
+              onClick={() => setFechaSeleccionada(fecha)}
             >
-              <div>{f.dia}</div>
-              <small>{f.nombre}</small>
+              <div>{fecha}</div>
             </button>
           ))}
         </div>
 
         <div className="horarios">
           {horas.map((hora, i) => (
-            <label key={`hora-${i}`} className="hora-opcion">
+            <label key={i} className="hora-opcion">
               <input
                 type="radio"
                 name="hora"
-                id={`hora-${i}`}
                 value={hora}
                 checked={horaSeleccionada === hora}
                 onChange={() => setHoraSeleccionada(hora)}
               />
-       <span className="texto-hora">
-  <span className="hora">{hora}</span>
-  {tipoEntrega === "domicilio" && <span className="precio-extra">+ $45.00</span>}
-</span>
+              <span>{hora}</span>
             </label>
           ))}
         </div>
       </div>
 
-      {/* Dirección */}
       <div className="direccion-box">
         <div className="subtitulos">
           <IonIcon icon={locationOutline} style={{ fontSize: "22px" }} />
-          <span className="direccion-label">
-            {tipoEntrega === "domicilio" ? "Dirección" : "Dirección de tienda"}
-          </span>
+          <span>{tipoEntrega === "domicilio" ? "Dirección de entrega" : "Dirección del local"}</span>
         </div>
+        <p><strong>{direccionActual}</strong></p>
 
-        <p style={{ margin: 0 }}>
-          <strong>{tipoEntrega === "domicilio" ? "Ubicación actual" : "Dirección:"}</strong>{' '}
-          {tipoEntrega === "domicilio"
-            ? "C. Gambusinos #8, col Monserrat. Capulálpam, Oax 68760. Méx"
-            : "C. 5 de febrero, num 29, Col centro, Oaxaca, 35567. Méx"}
-        </p>
-
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-  <button className="btn-verdee">
-    {tipoEntrega === "domicilio" ? "Cambiar ubicación" : "Ver ubicación"}
-  </button>
-</div>
+        {tipoEntrega === "domicilio" ? (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button className="btn-verdee" onClick={cambiarUbicacion}>
+              Cambiar ubicación
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button className="btn-verdee" onClick={verUbicacionMapa}>
+              Ver ubicación
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Botón continuar */}
       <div className="footer-boton">
-        <IonButton expand="block"  className="btn-rojoo" onClick={onNext}>
+        <IonButton expand="block" className="btn-rojoo" onClick={seleccionarFechaHora}>
           CONTINUAR
         </IonButton>
       </div>

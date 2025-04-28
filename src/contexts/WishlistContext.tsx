@@ -1,43 +1,54 @@
-// src/context/WishlistContext.tsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { agregarAListaDeseos, quitarDeListaDeseos, obtenerListaDeseos } from '../service/api';
 
-type Producto = {
-    id: number;
-    nombre: string;
-    precio: number;
-    imagen: string;
-};
+interface WishlistContextType {
+  wishlist: number[];
+  toggleWishlist: (productoId: number) => Promise<void>;
+  isInWishlist: (productoId: number) => boolean;
+}
 
-type WishlistContextType = {
-    wishlist: Producto[];
-    toggleWishlist: (producto: Producto) => void;
-    isInWishlist: (id: number) => boolean;
-};
-
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WishlistContext = createContext<WishlistContextType>({
+  wishlist: [],
+  toggleWishlist: async () => {},
+  isInWishlist: () => false,
+});
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [wishlist, setWishlist] = useState<Producto[]>([]);
+  const [wishlist, setWishlist] = useState<number[]>([]);
 
-    const toggleWishlist = (producto: Producto) => {
-        setWishlist((prev) =>
-            prev.find((item) => item.id === producto.id)
-                ? prev.filter((item) => item.id !== producto.id)
-                : [...prev, producto]
-        );
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const data = await obtenerListaDeseos();
+        setWishlist(data.map((item: any) => item.producto.producto_k));
+      } catch (err) {
+        console.error('❌ Error al cargar la lista de deseos:', err);
+      }
     };
+    fetchWishlist();
+  }, []);
 
-    const isInWishlist = (id: number) => wishlist.some((item) => item.id === id);
+  const toggleWishlist = async (productoId: number) => {
+    try {
+      if (wishlist.includes(productoId)) {
+        await quitarDeListaDeseos(productoId);
+        setWishlist(prev => prev.filter(id => id !== productoId));
+      } else {
+        await agregarAListaDeseos(productoId);
+        setWishlist(prev => [...prev, productoId]);
+      }
+    } catch (err) {
+      console.error('❌ Error al actualizar lista de deseos:', err);
+    }
+  };
 
-    return (
-        <WishlistContext.Provider value={{ wishlist, toggleWishlist, isInWishlist }}>
-            {children}
-        </WishlistContext.Provider>
-    );
+  const isInWishlist = (productoId: number) => wishlist.includes(productoId);
+
+  return (
+    <WishlistContext.Provider value={{ wishlist, toggleWishlist, isInWishlist }}>
+      {children}
+    </WishlistContext.Provider>
+  );
 };
 
-export const useWishlist = () => {
-    const context = useContext(WishlistContext);
-    if (!context) throw new Error("useWishlist must be used within WishlistProvider");
-    return context;
-};
+export const useWishlist = () => useContext(WishlistContext);

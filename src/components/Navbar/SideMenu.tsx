@@ -1,30 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonMenu, IonHeader, IonToolbar, IonTitle, IonContent,
   IonList, IonItem, IonIcon, IonLabel, IonMenuToggle
 } from '@ionic/react';
 import {
-  home, person, cart, heart, pin, card, time, flame, logOut
+  home, person, cart, heart, pin, card, time, flame, logOut, addCircle, pricetag
 } from 'ionicons/icons';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useHistory } from 'react-router-dom';
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
+import { clearUserSession, getUserRole } from '../../service/secureStorage';
 
 const FruticaSideMenu: React.FC = () => {
   const isMobile = useIsMobile();
   const history = useHistory();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [rol, setRol] = useState<string | null>(null);
 
-  const cerrarSesion = () => {
-    // Limpia datos (ajusta según tus necesidades)
-    localStorage.removeItem('token');
+  useEffect(() => {
+    const cargarRol = async () => {
+      const rolGuardado = await getUserRole();
+      setRol(rolGuardado);
+    };
+    cargarRol();
+  }, []);
+
+  const cerrarSesion = async () => {
+    // 1️Borra token seguro
+    await clearUserSession();
+  
+    // 2️ Borra localStorage normal
     localStorage.removeItem('userEmail');
     localStorage.removeItem('role');
     localStorage.removeItem('userId');
-    localStorage.removeItem('carrito'); // si usas uno
+    localStorage.removeItem('carrito');
     localStorage.removeItem('direccionPredeterminada');
+  
+    // 3️ Redirige a login
+    history.push('/login'); // mejor '/login' que '/logout'
+    window.location.reload();
 
-    history.push('/logout');
   };
 
   if (!isMobile) return null;
@@ -98,7 +113,23 @@ const FruticaSideMenu: React.FC = () => {
               </IonItem>
             </IonMenuToggle>
 
-            {/* Botón de cerrar sesión con confirmación */}
+            {/* Mostrar opciones extra solo si el rol es admin */}
+            {rol === 'admin' && (
+              <>
+          <IonMenuToggle autoHide={true}>
+             <IonItem button onClick={() => {
+             history.push('/admin/forms');
+            window.location.reload(); // 🔄 fuerza recarga
+              }}>
+          <IonIcon slot="start" icon={addCircle} />
+          <IonLabel>Agregar producto</IonLabel>
+        </IonItem>
+            </IonMenuToggle>
+
+              </>
+            )}
+
+            {/* Botón de cerrar sesión */}
             <IonMenuToggle autoHide={false}>
               <IonItem button onClick={() => setMostrarConfirmacion(true)}>
                 <IonIcon slot="start" icon={logOut} />
