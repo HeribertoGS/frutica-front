@@ -15,7 +15,7 @@ interface RegistroData {
   contrasena: string;
 }
 
-export const registrarUsuario = async (data: any) => {
+export const registrarUsuario = async (data: RegistroData) => {
   const res = await fetch(`http://localhost:4000/api/auth/registro`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -48,6 +48,56 @@ export const loginUsuario = async (correo: string, contrasena: string) => {
   }
 
   return json;
+};
+
+// Nuevo login con Google
+export const loginConGoogle = async (idTokenFirebase: string) => {
+  const res = await fetch('http://localhost:4000/api/auth/google-login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ idToken: idTokenFirebase }),
+  });
+
+  if (!res.ok) throw new Error('No se pudo iniciar sesión con Google');
+
+  const data = await res.json();
+  if (data.jwtToken) {
+    await saveUserSession(data.jwtToken);
+  }
+  return data;
+};
+
+// ✅ Consultar si el usuario ya completó registro
+export const verificarDireccionUsuario = async (token: string) => {
+  const res = await fetch('http://localhost:4000/api/direccion/mia', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      return null; // No tiene dirección
+    }
+    throw new Error('Error al consultar dirección del usuario');
+  }
+
+  return await res.json(); // Si existe, devuelve la dirección
+};
+
+export const buscarCorreo = async (correo: string) => {
+  const res = await fetch(`http://localhost:4000/api/credenciales/buscar-por-correo/${correo}`, {
+    method: 'GET',
+  });
+
+  if (!res.ok) {
+    throw new Error('No se encontró el correo');
+  }
+
+  return await res.json();
 };
 
 // -------- Obtener productos (requiere token) --------

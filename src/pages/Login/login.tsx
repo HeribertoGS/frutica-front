@@ -1,25 +1,43 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import '../Register/Register.css';
 import LogoFrutica from '../../assets/img/logofrutica.png';
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { buscarCorreo, loginConGoogle } from '../../service/api';
+import { saveUserSession } from '../../service/secureStorage';
+
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyAtzQ17oaS5hQ0sFsrVDkMdNbWp8z4gPW8",
+    authDomain: "frutica-app.firebaseapp.com",
+    projectId: "frutica-app",
+    storageBucket: "frutica-app.appspot.com",
+    messagingSenderId: "424567185813",
+    appId: "1:424567185813:web:c945cf0c3599391bda169c",
+    measurementId: "G-KSY1DKBMDQ"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [loadingGoogle, setLoadingGoogle] = useState(false);
     const history = useHistory();
 
     const togglePassword = () => setShowPassword(!showPassword);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!email || !password) {
             setError('Todos los campos son obligatorios');
             return;
         }
-
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('Correo inválido');
@@ -28,6 +46,42 @@ const Login: React.FC = () => {
 
         setError('');
         history.push('/fruta');
+    };
+
+    const handleGoogleLogin = async () => {
+        setLoadingGoogle(true);
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            if (!user) throw new Error('No se pudo obtener usuario de Google');
+
+            const idToken = await user.getIdToken();
+            const loginResponse = await loginConGoogle(idToken);
+
+            console.log('✅ Login con Google exitoso:', loginResponse);
+
+            if (loginResponse.jwtToken) {
+                await saveUserSession(loginResponse.jwtToken);
+                console.log('🔐 Token JWT guardado en secureStorage');
+            } else {
+                console.warn('⚠️ No se recibió jwtToken en respuesta');
+            }
+
+            try {
+                await buscarCorreo(user.email || '');
+                console.log('✅ Correo encontrado, redirigiendo...');
+                history.push('/fruta');
+            } catch (error) {
+                console.error('❌ Correo no encontrado:', error);
+                alert('Primero debes completar tu registro en la sección de registro.');
+            }
+
+        } catch (error) {
+            console.error('❌ Error al iniciar sesión con Google:', error);
+            alert('Error al iniciar sesión con Google');
+        } finally {
+            setLoadingGoogle(false);
+        }
     };
 
     return (
@@ -70,12 +124,18 @@ const Login: React.FC = () => {
                 <button type="submit" className="btn-verdeee">Entrar</button>
 
                 <div className="social-login">
-                    <button type="button" className="google">
-                        <i className="fa-brands fa-google icon"></i> Continuar con Google
+                    <button type="button" className="google" onClick={handleGoogleLogin} disabled={loadingGoogle}>
+                        {loadingGoogle ? 'Cargando...' : (
+                            <>
+                                <i className="fa-brands fa-google icon"></i> Continuar con Google
+                            </>
+                        )}
                     </button>
                 </div>
 
-                <p className="login-link">¿No tienes cuenta? <a href="/registro">Regístrate</a></p>
+                <p className="login-link">
+                    ¿No tienes cuenta? <Link to="/registro">Regístrate</Link> {/* 🔥 aquí corregido */}
+                </p>
             </form>
         </div>
     );
