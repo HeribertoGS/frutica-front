@@ -5,17 +5,17 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import DireccionForm, { Direccion } from '../../components/DireccionForm/DireccionForm';
 import DireccionMapa from '../../components/DireccionMapa/DireccionMapa';
-import { IonModal } from '@ionic/react';
-import { registrarUsuario } from "../../service/api";
-import { saveUserSession } from "../../service/secureStorage"
+import { IonModal, IonIcon } from '@ionic/react';
+import { loginConGoogle, registrarUsuario } from "../../service/api";
+import { saveUserSession } from "../../service/secureStorage";
 import { eye, eyeOff } from 'ionicons/icons';
-import { IonIcon } from '@ionic/react';
+import { useHistory, Link } from 'react-router-dom'; // ⬅️ Importamos también Link
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAtzQ17oaS5hQ0sFsrvDKMdNwb9z4gPW8",
+  apiKey: "AIzaSyAtzQ17oaS5hQ0sFsrVDkMdNbWp8z4gPW8",
   authDomain: "frutica-app.firebaseapp.com",
   projectId: "frutica-app",
-  storageBucket: "frutica-app.firebasestorage.app",
+  storageBucket: "frutica-app.appspot.com",
   messagingSenderId: "424567185813",
   appId: "1:424567185813:web:c945cf0c3599391bda169c",
   measurementId: "G-KSY1DKBMDQ"
@@ -43,6 +43,9 @@ const Register: React.FC = () => {
   const [direccionGuardada, setDireccionGuardada] = useState<Direccion | null>(null);
   const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number; maps_url: string } | null>(null);
   const [errores, setErrores] = useState<{ [key: string]: string }>({});
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+
+  const history = useHistory();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -70,7 +73,7 @@ const Register: React.FC = () => {
         nombre: form.nombre,
         apellido_paterno: form.apellido_paterno,
         sexo: form.sexo,
-        role: form.role,
+        role: form.role as 'user' | 'admin',
         correo_electronico: form.correo,
         contrasena: form.contrasena,
         contrasenaRepetida: form.repetirContrasena,
@@ -93,6 +96,32 @@ const Register: React.FC = () => {
       } catch (err) {
         console.error("❌ Error al registrar usuario:", err);
       }
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoadingGoogle(true);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      if (!user) throw new Error('No se pudo obtener usuario de Google');
+
+      const idToken = await user.getIdToken();
+      const loginResponse = await loginConGoogle(idToken);
+
+      console.log('✅ Login con Google exitoso:', loginResponse);
+
+      if (loginResponse.jwtToken) {
+        await saveUserSession(loginResponse.jwtToken);
+        history.push('/fruta');
+      } else {
+        alert('Tu cuenta de Google no está registrada. Por favor regístrate primero.');
+      }
+    } catch (error) {
+      console.error('❌ Error al iniciar sesión con Google:', error);
+      alert('Error al iniciar sesión con Google');
+    } finally {
+      setLoadingGoogle(false);
     }
   };
 
@@ -145,12 +174,16 @@ const Register: React.FC = () => {
         <button type="submit" className="btn-verdeee">Crear cuenta</button>
 
         <div className="social-login">
-          <button type="button" className="google" onClick={() => alert('Google login aún no conectado')}>
-            <i className="fa-brands fa-google icon"></i> Continuar con Google
+          <button type="button" className="google" onClick={handleGoogleLogin} disabled={loadingGoogle}>
+            {loadingGoogle ? 'Cargando...' : (
+              <>
+                <i className="fa-brands fa-google icon"></i> Continuar con Google
+              </>
+            )}
           </button>
         </div>
 
-        <p className="login-link">¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a></p>
+        <p className="login-link">¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link> {/* 🔥 corregido aquí */}</p>
       </form>
 
       <IonModal isOpen={mostrarDireccionForm} onDidDismiss={() => setMostrarDireccionForm(false)}>
@@ -197,4 +230,3 @@ const Register: React.FC = () => {
 };
 
 export default Register;
-

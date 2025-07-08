@@ -1,8 +1,11 @@
-// src/services/api.ts
+import axios from 'axios';
 import { saveUserSession, getUserSession, getUserId, getToken } from './secureStorage';
-// src/services/api.ts
+
 const API_URL = 'http://localhost:4000/api';
 
+const API = axios.create({
+  baseURL: "http://localhost:4000/api",
+});
 interface RegistroData {
   nombre: string;
   apellido_paterno: string;
@@ -12,7 +15,7 @@ interface RegistroData {
   contrasena: string;
 }
 
-export const registrarUsuario = async (data: any) => {
+export const registrarUsuario = async (data: RegistroData) => {
   const res = await fetch(`http://localhost:4000/api/auth/registro`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -46,6 +49,65 @@ export const loginUsuario = async (email: string, password: string) => {
   return data;
 };
 
+// Nuevo login con Google
+export const loginConGoogle = async (idTokenFirebase: string) => {
+  const res = await fetch('http://localhost:4000/api/auth/google-login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ idToken: idTokenFirebase }),
+  });
+
+  if (!res.ok) throw new Error('No se pudo iniciar sesión con Google');
+
+  const data = await res.json();
+  if (data.jwtToken) {
+    await saveUserSession(data.jwtToken, data.role);
+  }
+  return data;
+};
+
+// ✅ Consultar si el usuario ya completó registro
+export const verificarDireccionUsuario = async (token: string) => {
+  const res = await fetch('http://localhost:4000/api/direccion/mia', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      return null; // No tiene dirección
+    }
+    throw new Error('Error al consultar dirección del usuario');
+  }
+
+  return await res.json(); // Si existe, devuelve la dirección
+};
+
+export const buscarCorreo = async (correo: string) => {
+  const res = await fetch(`http://localhost:4000/api/credenciales/buscar-por-correo/${correo}`, {
+    method: 'GET',
+  });
+
+  if (!res.ok) {
+    throw new Error('No se encontró el correo');
+  }
+
+  return await res.json();
+};
+// verificarCorreoGoogle.ts
+export const verificarCorreoGoogle = async (correo: string) => {
+  const res = await fetch(`${API_URL}/credenciales/buscar-por-correo/${correo}`);
+  if (!res.ok) {
+    // No existe el correo
+    return false;
+  }
+  const data = await res.json();
+  return !!data;
+};
 
 // -------- Obtener productos (requiere token) --------
 // 1. Obtener todos los productos
@@ -59,58 +121,40 @@ export const obtenerProductos = async () => {
   if (!res.ok) throw new Error('No se pudieron obtener los productos');
   return res.json();
 };
-
-// 2. Obtener todas las categorías
 export const obtenerCategorias = async () => {
   const token = await getUserSession();
-  if (!token) throw new Error('No hay token');
-
   const res = await fetch(`${API_URL}/categoria`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
     },
   });
-
   if (!res.ok) throw new Error('No se pudieron obtener las categorías');
   return res.json();
 };
 
-// 3. Obtener un producto por ID
+// 2. Obtener un producto por ID
 export const obtenerProductoPorId = async (id: number) => {
   const token = await getUserSession();
-  if (!token) throw new Error('No hay token');
-
   const res = await fetch(`${API_URL}/productos/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
     },
   });
-
   if (!res.ok) throw new Error('No se pudo obtener el producto');
   return res.json();
 };
 
-// 4. Crear producto (con múltiples imágenes)
-export const crearProducto = async (producto: any, imagenes: File[]) => {
+// 3. Crear producto (con múltiples imágenes)
+export const crearProducto = async (producto: any, fotos: File[]) => {
   const token = await getUserSession();
-  if (!token) throw new Error('No hay token');
-
   const formData = new FormData();
 
-  imagenes.forEach((file) => {
-    formData.append('foto', file); 
+  fotos.forEach((file) => {
+    formData.append('foto', file); // debe coincidir con el nombre en FilesInterceptor
   });
 
   for (const key in producto) {
-    const valor = producto[key];
-
-    if (valor !== undefined && valor !== null) {
-      if (typeof valor === 'boolean') {
-        formData.append(key, JSON.stringify(valor)); // ✅ convierte el booleano real
-      } else {
-        formData.append(key, valor.toString());
-      }
-    }
+    formData.append(key, producto[key]);
   }
 
   const res = await fetch(`${API_URL}/productos/crear`, {
@@ -121,399 +165,289 @@ export const crearProducto = async (producto: any, imagenes: File[]) => {
     body: formData,
   });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error('Error detalle:', errorText);
-    throw new Error('No se pudo crear el producto');
-  }
-
+  if (!res.ok) throw new Error('No se pudo crear el producto');
   return res.json();
 };
 
-
-// 5. Actualizar producto (sin actualizar imágenes)
+// 4. Actualizar producto (sin imagen)
 export const actualizarProducto = async (id: number, data: any) => {
   const token = await getUserSession();
-  if (!token) throw new Error('No hay token');
-
   const res = await fetch(`${API_URL}/productos/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   });
-
   if (!res.ok) throw new Error('No se pudo actualizar el producto');
+  return res.json();
+};
+
+// 5. Subir imagen para producto individual (opcional, si ya tienes un producto y subes imagen después)
+export const subirImagenProducto = async (id: number, archivo: File) => {
+  const token = await getUserSession();
+  const formData = new FormData();
+  formData.append('file', archivo); // debe coincidir con `@UploadedFile('file')`
+
+  const res = await fetch(`${API_URL}/productos/${id}/upload`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error('No se pudo subir la imagen');
   return res.json();
 };
 
 // 6. Eliminar producto
 export const eliminarProducto = async (id: number) => {
   const token = await getUserSession();
-  if (!token) throw new Error('No hay token');
-
   const res = await fetch(`${API_URL}/productos/${id}`, {
     method: 'DELETE',
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
     },
   });
-
   if (!res.ok) throw new Error('No se pudo eliminar el producto');
   return res.json();
 };
-  
-  
-  // 2. Crear nueva categoría
-  export const crearCategoria = async (categoria: any) => {
-    const token = await getUserSession();
-    if (!token) throw new Error('No hay token');
-  
-    const res = await fetch(`${API_URL}/categoria`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(categoria),
-    });
-  
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Error detalle:', errorText);
-      throw new Error('No se pudo crear la categoría');
-    }
-  
-    return res.json();
-  };
-  
-  // 3. Obtener categoría por ID
-  export const obtenerCategoriaPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/categoria/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo obtener la categoría');
-    return res.json();
-  };
-  
-  // 4. Actualizar categoría por ID
-  export const actualizarCategoria = async (id: number, nuevoNombre: string) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/categoria/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ nombre: nuevoNombre }),
-    });
-    if (!res.ok) throw new Error('No se pudo actualizar la categoría');
-    return res.json();
-  };
-  
-  // 5. Eliminar categoría
-  export const eliminarCategoria = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/categoria/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo eliminar la categoría');
-    return res.json();
-  };
-  /*----------Carrito de compras--------------- */
-  export const agregarProductoAlCarrito = async (data: {
-    productoId: number;
-    cantidad: number;
-    tipo_medida: 'kg' | 'pieza';
-    tamano?: 'Chico' | 'Mediano' | 'Grande';
-    peso_personalizado?: number;
-  }) => {
-    const token = await getUserSession();
-    const userId = await getUserId();
-  
-    const payload = { ...data, usuarioId: userId };
-  
-    console.log('📦 Payload que se enviará al carrito:', payload); // <<--- aquí
-  
-    const res = await fetch(`${API_URL}/carrito/agregar`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-  
-    if (!res.ok) throw new Error('Error al agregar producto al carrito');
-    return res.json();
-  };
-  
-// Obtener el carrito real del usuario
-export const obtenerCarritoUsuario = async () => {
+
+
+// 2. Crear nueva categoría
+export const crearCategoria = async (nombre: string) => {
   const token = await getUserSession();
-  const userId = await getUserId();
-
-  const res = await fetch(`${API_URL}/carrito/${userId}`, {
+  const res = await fetch(`${API_URL}/categoria`, {
+    method: 'POST',
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
+    body: JSON.stringify({ nombre }),
   });
-
-  if (!res.ok) throw new Error('No se pudo obtener el carrito');
+  if (!res.ok) throw new Error('No se pudo crear la categoría');
   return res.json();
 };
 
-
-// Editar cantidad de un producto en el carrito
-export const editarProductoCarrito = async (
-  productoId: number,
-  nuevaCantidad: number,
-  tipo_medida: 'kg' | 'pieza',
-  tamano?: 'Chico' | 'Mediano' | 'Grande',
-  peso_personalizado?: number
-) => {
+// 3. Obtener categoría por ID
+export const obtenerCategoriaPorId = async (id: number) => {
   const token = await getUserSession();
-  const userId = await getUserId();
+  const res = await fetch(`${API_URL}/categoria/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener la categoría');
+  return res.json();
+};
 
-  if (!token || !userId) throw new Error('Token o ID de usuario no disponibles');
-
-  const res = await fetch(`${API_URL}/carrito/${userId}/${productoId}`, {
+// 4. Actualizar categoría por ID
+export const actualizarCategoria = async (id: number, nuevoNombre: string) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/categoria/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      nuevaCantidad,
-      tipo_medida,
-      tamano,
-      peso_personalizado,
-    }),
+    body: JSON.stringify({ nombre: nuevoNombre }),
   });
-
-  if (!res.ok) throw new Error('No se pudo actualizar el producto del carrito');
-
+  if (!res.ok) throw new Error('No se pudo actualizar la categoría');
   return res.json();
 };
 
-
-// Eliminar un producto del carrito
-export const eliminarProductoCarrito = async (productoId: number) => {
+// 5. Eliminar categoría
+export const eliminarCategoria = async (id: number) => {
   const token = await getUserSession();
-  const userId = await getUserId();
-
-  const res = await fetch(`${API_URL}/carrito/${userId}/${productoId}`, {
+  const res = await fetch(`${API_URL}/categoria/${id}`, {
     method: 'DELETE',
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
     },
   });
-
-  if (!res.ok) throw new Error('No se pudo eliminar el producto del carrito');
+  if (!res.ok) throw new Error('No se pudo eliminar la categoría');
   return res.json();
 };
 
-// Vaciar carrito completo
-export const vaciarCarritoUsuario = async () => {
-  const token = await getUserSession();
-  const userId = await getUserId();
-
-  const res = await fetch(`${API_URL}/carrito/vaciar/${userId}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) throw new Error('No se pudo vaciar el carrito');
-  return res.json();
-};
-
-  // ----------- COMENTARIOS -----------
+// ----------- COMENTARIOS -----------
 
 export interface ComentarioData {
-    titulo: string;
-    descripcion: string;
-    email?: string;
-    web?: string;
-    megusta?: boolean;
-    pedidoId?: number;
-    usuarioId?: number;
-    respuestaId?: number;
-  }
-  
-  // 1. Crear comentario
-  export const crearComentario = async (data: ComentarioData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/comentario`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudo crear el comentario');
-    return res.json();
-  };
-  
-  // 2. Obtener todos los comentarios (solo admin)
-  export const obtenerComentarios = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/comentario`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los comentarios');
-    return res.json();
-  };
-  
-  // 3. Obtener comentario por ID
-  export const obtenerComentarioPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/comentario/${id}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo obtener el comentario');
-    return res.json();
-  };
-  
-  // 4. Actualizar comentario
-  export const actualizarComentario = async (id: number, data: Partial<ComentarioData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/comentario/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudo actualizar el comentario');
-    return res.json();
-  };
-  
-  // 5. Eliminar comentario
-  export const eliminarComentario = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/comentario/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo eliminar el comentario');
-    return res.json();
-  };
-  /*Modificar datos de cuenta*/
+  titulo: string;
+  descripcion: string;
+  email?: string;
+  web?: string;
+  megusta?: boolean;
+  pedidoId?: number;
+  usuarioId?: number;
+  respuestaId?: number;
+}
 
-  export const actualizarContrasena = async (credencialId: number, nueva: string) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/credenciales/${credencialId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ contrasena: nueva }),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo actualizar la contraseña');
-    return res.json();
-  };
+// 1. Crear comentario
+export const crearComentario = async (data: ComentarioData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/comentario`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo crear el comentario');
+  return res.json();
+};
 
-  // ----------- DATOS PERSONALES -----------
+// 2. Obtener todos los comentarios (solo admin)
+export const obtenerComentarios = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/comentario`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los comentarios');
+  return res.json();
+};
+
+// 3. Obtener comentario por ID
+export const obtenerComentarioPorId = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/comentario/${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener el comentario');
+  return res.json();
+};
+
+// 4. Actualizar comentario
+export const actualizarComentario = async (id: number, data: Partial<ComentarioData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/comentario/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo actualizar el comentario');
+  return res.json();
+};
+
+// 5. Eliminar comentario
+export const eliminarComentario = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/comentario/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo eliminar el comentario');
+  return res.json();
+};
+/*Modificar datos de cuenta*/
+
+export const actualizarContrasena = async (credencialId: number, nueva: string) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/credenciales/${credencialId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ contrasena: nueva }),
+  });
+
+  if (!res.ok) throw new Error('No se pudo actualizar la contraseña');
+  return res.json();
+};
+
+// ----------- DATOS PERSONALES -----------
 
 export interface DatosPersonalesData {
-    nombre?: string;
-    apellido_paterno?: string;
-    apellido_materno?: string;
-    telefono?: string;
-    fecha_nacimiento?: string;
-    // Agrega los campos que tenga tu DTO
-  }
-  
-  // 1. Crear datos personales
-  export const crearDatosPersonales = async (data: DatosPersonalesData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/datos-personales`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudieron crear los datos personales');
-    return res.json();
-  };
-  
-  // 2. Obtener todos (solo admin)
-  export const obtenerDatosPersonales = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/datos-personales`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los datos personales');
-    return res.json();
-  };
-  
-  // 3. Obtener datos personales por ID
-  export const obtenerDatosPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/datos-personales/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los datos del usuario');
-    return res.json();
-  };
-  
-  // 4. Actualizar datos personales
-  export const actualizarDatosPersonales = async (id: number, data: DatosPersonalesData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/datos-personales/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudieron actualizar los datos personales');
-    return res.json();
-  };
-  
-  // 5. Eliminar datos personales
-  export const eliminarDatosPersonales = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/datos-personales/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron eliminar los datos personales');
-    return res.json();
-  };
+  nombre?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+  // Agrega los campos que tenga tu DTO
+}
 
-  // ----------- DETALLE PEDIDO -----------
+// 1. Crear datos personales
+export const crearDatosPersonales = async (data: DatosPersonalesData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/datos-personales`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudieron crear los datos personales');
+  return res.json();
+};
+
+// 2. Obtener todos (solo admin)
+export const obtenerDatosPersonales = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/datos-personales`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los datos personales');
+  return res.json();
+};
+
+// 3. Obtener datos personales por ID
+export const obtenerDatosPorId = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/datos-personales/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los datos del usuario');
+  return res.json();
+};
+
+// 4. Actualizar datos personales
+export const actualizarDatosPersonales = async (id: number, data: DatosPersonalesData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/datos-personales/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudieron actualizar los datos personales');
+  return res.json();
+};
+
+// 5. Eliminar datos personales
+export const eliminarDatosPersonales = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/datos-personales/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron eliminar los datos personales');
+  return res.json();
+};
+
+// ----------- DETALLE PEDIDO -----------
 
 export interface DetallePedidoData {
     productoId: number;
@@ -608,78 +542,78 @@ export interface DetallePedidoData {
   // ----------- DETALLE FACTURA -----------
 
 export interface DetalleFacturaData {
-    facturaId: number;
-    concepto: string;
-    monto: number;
-    // agrega otros campos que incluya tu DTO si aplica
-  }
-  
-  // 1. Crear detalle de factura
-  export const crearDetalleFactura = async (data: DetalleFacturaData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detalle-fact`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudo crear el detalle de factura');
-    return res.json();
-  };
-  
-  // 2. Obtener todos los detalles (solo admin)
-  export const obtenerDetallesFactura = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detalle-fact`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los detalles de factura');
-    return res.json();
-  };
-  
-  // 3. Obtener detalle por ID
-  export const obtenerDetalleFacturaPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detalle-fact/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo obtener el detalle de factura');
-    return res.json();
-  };
-  
-  // 4. Actualizar detalle de factura
-  export const actualizarDetalleFactura = async (id: number, data: Partial<DetalleFacturaData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detalle-fact/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudo actualizar el detalle de factura');
-    return res.json();
-  };
-  
-  // 5. Eliminar detalle de factura
-  export const eliminarDetalleFactura = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detalle-fact/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo eliminar el detalle de factura');
-    return res.json();
-  };
+  facturaId: number;
+  concepto: string;
+  monto: number;
+  // agrega otros campos que incluya tu DTO si aplica
+}
+
+// 1. Crear detalle de factura
+export const crearDetalleFactura = async (data: DetalleFacturaData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detalle-fact`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo crear el detalle de factura');
+  return res.json();
+};
+
+// 2. Obtener todos los detalles (solo admin)
+export const obtenerDetallesFactura = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detalle-fact`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los detalles de factura');
+  return res.json();
+};
+
+// 3. Obtener detalle por ID
+export const obtenerDetalleFacturaPorId = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detalle-fact/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener el detalle de factura');
+  return res.json();
+};
+
+// 4. Actualizar detalle de factura
+export const actualizarDetalleFactura = async (id: number, data: Partial<DetalleFacturaData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detalle-fact/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo actualizar el detalle de factura');
+  return res.json();
+};
+
+// 5. Eliminar detalle de factura
+export const eliminarDetalleFactura = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detalle-fact/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo eliminar el detalle de factura');
+  return res.json();
+};
 // ----------- DIRECCIONES -----------
 
 export interface DireccionData {
@@ -697,27 +631,106 @@ export interface DireccionData {
   }
 
 
-  
-  // 1. Crear dirección
 
-  export const guardarDireccion = async (data: any, token: string) => {
-    const res = await fetch('http://localhost:4000/api/direcciones', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(`Error guardando dirección: ${JSON.stringify(error)}`);
-    }
-  
-    return await res.json();
-  };
-  
+// 2. Obtener direcciones del usuario
+export const obtenerDirecciones = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/direcciones`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener las direcciones');
+  return res.json();
+};
+
+
+// 4. Actualizar dirección
+export const actualizarDireccion = async (id: number, data: Partial<DireccionData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/direcciones/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo actualizar la dirección');
+  return res.json();
+};
+
+// 5. Eliminar dirección
+export const eliminarDireccion = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/direcciones/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo eliminar la dirección');
+  return res.json();
+};
+
+// 6. Marcar dirección como predeterminada
+export const marcarDireccionPredeterminada = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/direcciones/${id}/predeterminada`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo marcar como predeterminada');
+  return res.json();
+
+};
+
+///---------------PERFIL------
+/// -----------------------------
+// Sección: PERFIL DEL USUARIO
+// -----------------------------
+
+// Obtener datos personales del usuario
+export const obtenerPerfilUsuario = async (token: string) => {
+  const res = await API.get("/usuarios/mi-perfil", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+// Obtener datos de facturación del usuario
+export const obtenerDatosFacturacion = async (token: string) => {
+  const res = await API.get("/datos-personales/mi-perfil", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+// Actualizar datos personales (nombre, apellidos, sexo, teléfono)
+export const actualizarPerfilUsuario = async (token: string, datos: any) => {
+  const res = await API.patch("/usuarios/mi-perfil", datos, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+// Actualizar contraseña del usuario
+export const actualizarPasswordUsuario = async (token: string, passwords: { currentPassword: string; newPassword: string }) => {
+  const res = await API.patch("/credenciales/actualizar-password", passwords, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+// Guardar/Actualizar datos de facturación del usuario
+export const guardarFacturacion = async (token: string, datos: { rfc: string; razon_social: string; uso_factura: string; tipo_persona: string }) => {
+  const res = await API.post("/datos-personales/guardar-facturacion", datos, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
 
 
  // 2. Obtener mis direcciones
@@ -789,40 +802,9 @@ export const editarDireccion = async (id: number, data: any, token: string) => {
   return await res.json();
 };
 
-// 3. Eliminar dirección
-
-export const eliminarDireccion = async (id: number, token: string) => {
-  const res = await fetch(`http://localhost:4000/api/direcciones/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(`Error eliminando dirección: ${JSON.stringify(error)}`);
-  }
-
-  return await res.json();
-};
 
 
-// 4. Marcar dirección como predeterminada
 
-export const marcarDireccionPredeterminada = async (id: number, token: string) => {
-  const res = await fetch(`http://localhost:4000/api/direcciones/${id}/marcar-predeterminada`, {
-    method: 'PATCH',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(`Error marcando como predeterminada: ${JSON.stringify(error)}`);
-  }
-};
 // ----------- FACTURAS -----------
 
 export interface FacturaData {
@@ -1045,7 +1027,8 @@ export interface FormaPagoData {
     return res.json();
   };
 
-  // ----------- LISTA DE DESEOS -----------
+
+// ----------- LISTA DE DESEOS -----------
 
   export const agregarAListaDeseos = async (productoId: number) => {
     const token = await getUserSession();
@@ -1103,64 +1086,64 @@ export interface FormaPagoData {
   // ----------- NOTIFICACIONES -----------
 
 export interface NotificacionData {
-    titulo: string;
-    mensaje: string;
-    tipo: string; // Ej: 'estado_pedido', 'sistema', etc.
-    usuarioId?: number;
-    leida?: boolean;
-  }
-  
-  // 1. Crear notificación
-  export const crearNotificacion = async (data: NotificacionData) => {
-    const res = await fetch(`${API_URL}/notificaciones`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo crear la notificación');
-    return res.json();
-  };
-  
-  // 2. Obtener todas las notificaciones
-  export const obtenerNotificaciones = async () => {
-    const res = await fetch(`${API_URL}/notificaciones`);
-    if (!res.ok) throw new Error('No se pudieron obtener las notificaciones');
-    return res.json();
-  };
-  
-  // 3. Obtener notificación por ID
-  export const obtenerNotificacionPorId = async (id: number) => {
-    const res = await fetch(`${API_URL}/notificaciones/${id}`);
-    if (!res.ok) throw new Error('No se pudo obtener la notificación');
-    return res.json();
-  };
-  
-  // 4. Actualizar notificación
-  export const actualizarNotificacion = async (id: number, data: Partial<NotificacionData>) => {
-    const res = await fetch(`${API_URL}/notificaciones/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo actualizar la notificación');
-    return res.json();
-  };
-  
-  // 5. Eliminar notificación
-  export const eliminarNotificacion = async (id: number) => {
-    const res = await fetch(`${API_URL}/notificaciones/${id}`, {
-      method: 'DELETE',
-    });
-  
-    if (!res.ok) throw new Error('No se pudo eliminar la notificación');
-    return res.json();
-  };
+  titulo: string;
+  mensaje: string;
+  tipo: string; // Ej: 'estado_pedido', 'sistema', etc.
+  usuarioId?: number;
+  leida?: boolean;
+}
+
+// 1. Crear notificación
+export const crearNotificacion = async (data: NotificacionData) => {
+  const res = await fetch(`${API_URL}/notificaciones`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo crear la notificación');
+  return res.json();
+};
+
+// 2. Obtener todas las notificaciones
+export const obtenerNotificaciones = async () => {
+  const res = await fetch(`${API_URL}/notificaciones`);
+  if (!res.ok) throw new Error('No se pudieron obtener las notificaciones');
+  return res.json();
+};
+
+// 3. Obtener notificación por ID
+export const obtenerNotificacionPorId = async (id: number) => {
+  const res = await fetch(`${API_URL}/notificaciones/${id}`);
+  if (!res.ok) throw new Error('No se pudo obtener la notificación');
+  return res.json();
+};
+
+// 4. Actualizar notificación
+export const actualizarNotificacion = async (id: number, data: Partial<NotificacionData>) => {
+  const res = await fetch(`${API_URL}/notificaciones/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo actualizar la notificación');
+  return res.json();
+};
+
+// 5. Eliminar notificación
+export const eliminarNotificacion = async (id: number) => {
+  const res = await fetch(`${API_URL}/notificaciones/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) throw new Error('No se pudo eliminar la notificación');
+  return res.json();
+};
 // ----------- OFERTAS -----------
 // ----------- OFERTAS -----------
 
@@ -1283,89 +1266,89 @@ export const eliminarOferta = async (id: number) => {
  // ----------- TIPO DE ENTREGA -----------
 
 export interface TipoEntregaData {
-    metodo_entrega: 'Entrega a domicilio' | 'Pasar a recoger';
-    fecha_creacion_envio?: string;
-    fecha_estimada_entrega?: string;
-    hora_estimada_entrega?: string;
-    costo_envio?: number;
-    estado?: string;
-    direccionId?: number;
-    repartidorId?: number;
-  }
-  
-  // 1. Crear tipo de entrega
-  export const crearTipoEntrega = async (data: TipoEntregaData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/tipo-entrega`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo crear el tipo de entrega');
-    return res.json();
-  };
-  
-  // 2. Obtener todos los tipos de entrega
-  export const obtenerTiposEntrega = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/tipo-entrega`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudieron obtener los tipos de entrega');
-    return res.json();
-  };
-  
-  // 3. Obtener tipo de entrega por ID
-  export const obtenerTipoEntregaPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/tipo-entrega/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo obtener el tipo de entrega');
-    return res.json();
-  };
-  
-  // 4. Actualizar tipo de entrega (solo admin)
-  export const actualizarTipoEntrega = async (id: number, data: Partial<TipoEntregaData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/tipo-entrega/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo actualizar el tipo de entrega');
-    return res.json();
-  };
-  
-  // 5. Eliminar tipo de entrega
-  export const eliminarTipoEntrega = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/tipo-entrega/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo eliminar el tipo de entrega');
-    return res.json();
-  };
+  metodo_entrega: 'Entrega a domicilio' | 'Pasar a recoger';
+  fecha_creacion_envio?: string;
+  fecha_estimada_entrega?: string;
+  hora_estimada_entrega?: string;
+  costo_envio?: number;
+  estado?: string;
+  direccionId?: number;
+  repartidorId?: number;
+}
 
-  // ----------- PAGOS -----------
+// 1. Crear tipo de entrega
+export const crearTipoEntrega = async (data: TipoEntregaData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/tipo-entrega`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo crear el tipo de entrega');
+  return res.json();
+};
+
+// 2. Obtener todos los tipos de entrega
+export const obtenerTiposEntrega = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/tipo-entrega`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudieron obtener los tipos de entrega');
+  return res.json();
+};
+
+// 3. Obtener tipo de entrega por ID
+export const obtenerTipoEntregaPorId = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/tipo-entrega/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo obtener el tipo de entrega');
+  return res.json();
+};
+
+// 4. Actualizar tipo de entrega (solo admin)
+export const actualizarTipoEntrega = async (id: number, data: Partial<TipoEntregaData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/tipo-entrega/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo actualizar el tipo de entrega');
+  return res.json();
+};
+
+// 5. Eliminar tipo de entrega
+export const eliminarTipoEntrega = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/tipo-entrega/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo eliminar el tipo de entrega');
+  return res.json();
+};
+
+// ----------- PAGOS -----------
 
 export interface CreatePagoData {
     userId: number;
