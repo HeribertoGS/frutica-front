@@ -104,7 +104,6 @@ const FruticaDesktopHeader: React.FC = () => {
   style={{ cursor: 'pointer' }}
   onClick={() => {
     history.push('/admin/forms');
-    window.location.reload();
   }}
 >
   add_circle

@@ -617,25 +617,38 @@ export const eliminarDetalleFactura = async (id: number) => {
 // ----------- DIRECCIONES -----------
 
 export interface DireccionData {
-    calle: string;
-    numero: string;
-    colonia: string;
-    municipio: string;
-    estado: string;
-    cp: string;
-    referencia?: string;
-    latitud?: number;
-    longitud?: number;
-    maps_url?: string;
-    es_publica?: boolean;
-  }
+  calle: string;
+  numero: string;
+  colonia: string;
+  municipio: string;
+  estado: string;
+  cp: string;
+  referencia?: string;
+  latitud?: number;
+  longitud?: number;
+  maps_url?: string;
+  es_publica?: boolean;
+}
 
-
-
-// 2. Obtener direcciones del usuario
-export const obtenerDirecciones = async () => {
-  const token = await getUserSession();
+// 1. Guardar nueva dirección
+export const guardarDireccion = async (data: DireccionData, token?: string) => {
+  if (!token) token = await getToken();
   const res = await fetch(`${API_URL}/direcciones`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo guardar la dirección');
+  return res.json();
+};
+
+// 2. Obtener todas tus direcciones
+export const obtenerMisDirecciones = async () => {
+  const token = await getToken(); // asegúrate de usar esta versión
+  const res = await fetch(`${API_URL}/direcciones/mis-direcciones`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -644,10 +657,38 @@ export const obtenerDirecciones = async () => {
   return res.json();
 };
 
+// 3. Obtener dirección por ID
+export const obtenerDireccionPorId = async (id: number, token?: string) => {
+  if (!token) token = await getToken();
+  const res = await fetch(`${API_URL}/direcciones/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener la dirección');
+  return res.json();
+};
 
-// 4. Actualizar dirección
-export const actualizarDireccion = async (id: number, data: Partial<DireccionData>) => {
-  const token = await getUserSession();
+// 4. Obtener la dirección predeterminada
+export const obtenerDireccionPredeterminada = async (token?: string) => {
+  if (!token) token = await getToken();
+  const res = await fetch(`${API_URL}/direcciones/predeterminada`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener la dirección predeterminada');
+  return res.json();
+};
+
+// 5. Editar/actualizar una dirección
+export const editarDireccion = async (
+  id: number,
+  data: Partial<DireccionData>,
+  token?: string
+) => {
+  if (!token) token = await getToken();
   const res = await fetch(`${API_URL}/direcciones/${id}`, {
     method: 'PATCH',
     headers: {
@@ -660,9 +701,9 @@ export const actualizarDireccion = async (id: number, data: Partial<DireccionDat
   return res.json();
 };
 
-// 5. Eliminar dirección
-export const eliminarDireccion = async (id: number) => {
-  const token = await getUserSession();
+// 6. Eliminar dirección
+export const eliminarDireccion = async (id: number, token?: string) => {
+  if (!token) token = await getToken();
   const res = await fetch(`${API_URL}/direcciones/${id}`, {
     method: 'DELETE',
     headers: {
@@ -673,9 +714,9 @@ export const eliminarDireccion = async (id: number) => {
   return res.json();
 };
 
-// 6. Marcar dirección como predeterminada
-export const marcarDireccionPredeterminada = async (id: number) => {
-  const token = await getUserSession();
+// 7. Marcar dirección como predeterminada
+export const marcarDireccionPredeterminada = async (id: number, token?: string) => {
+  if (!token) token = await getToken();
   const res = await fetch(`${API_URL}/direcciones/${id}/predeterminada`, {
     method: 'PATCH',
     headers: {
@@ -684,8 +725,9 @@ export const marcarDireccionPredeterminada = async (id: number) => {
   });
   if (!res.ok) throw new Error('No se pudo marcar como predeterminada');
   return res.json();
-
 };
+
+
 
 ///---------------PERFIL------
 /// -----------------------------
@@ -731,77 +773,6 @@ export const guardarFacturacion = async (token: string, datos: { rfc: string; ra
   });
   return res.data;
 };
-
-
- // 2. Obtener mis direcciones
- export const obtenerMisDirecciones = async (token: string) => {
-  const res = await fetch('http://localhost:4000/api/direcciones/mis-direcciones', {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(`Error obteniendo direcciones: ${JSON.stringify(error)}`);
-  }
-
-  const data = await res.json();
-
-  // ✅ Mapeamos direccion_k como id
-  const direccionesConId = data.map((direccion: any) => ({
-    ...direccion,
-    id: direccion.direccion_k, // 👈 OJO aquí
-  }));
-
-  return direccionesConId;
-};
-
-  // 3. Obtener dirección por ID
-  export const obtenerDireccionPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/direcciones/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo obtener la dirección');
-    return res.json();
-  };
-  
-  export const obtenerDireccionPredeterminada = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/direcciones/predeterminada`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('❌ No se pudo obtener la dirección predeterminada');
-    return res.json(); // Aquí esperas el objeto de dirección predeterminada
-  };
-
-
-// 5. Editar dirección
-
-export const editarDireccion = async (id: number, data: any, token: string) => {
-  const res = await fetch(`http://localhost:4000/api/direcciones/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(data)
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(`Error editando dirección: ${JSON.stringify(error)}`);
-  }
-
-  return await res.json();
-};
-
 
 
 
@@ -1144,7 +1115,6 @@ export const eliminarNotificacion = async (id: number) => {
   if (!res.ok) throw new Error('No se pudo eliminar la notificación');
   return res.json();
 };
-// ----------- OFERTAS -----------
 // ----------- OFERTAS -----------
 
 export interface OfertaData {
@@ -1686,3 +1656,110 @@ export const cambiarEstadoPedido = async (pedidoId: number, nuevoEstado: string,
     return res.json();
   };
   
+// ---------- CARRITO ----------
+
+
+// 1. Obtener el carrito de un usuario
+export const obtenerCarritoUsuario = async () => {
+  const userId = await getUserId();
+  const token = await getUserSession();
+
+  const res = await fetch(`${API_URL}/carrito/${userId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo obtener el carrito');
+  return res.json();
+};
+
+// 2. Agregar producto al carrito
+export const agregarProductoAlCarrito = async (data: any) => {
+  const token = await getUserSession();
+
+  const res = await fetch(`${API_URL}/carrito/agregar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo agregar producto al carrito');
+  return res.json();
+};
+
+// 3. Agregar todos los productos desde la lista de deseos
+export const agregarTodosDesdeLista = async () => {
+  const token = await getUserSession();
+
+  const res = await fetch(`${API_URL}/carrito/desde-deseos`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo agregar desde la lista de deseos');
+  return res.json();
+};
+
+// 4. Editar producto del carrito
+export const editarProductoCarrito = async (
+  usuarioId: number,
+  productoId: number,
+  data: {
+    nuevaCantidad: number;
+    tipo_medida: 'kg' | 'pieza';
+    tamano?: 'Chico' | 'Mediano' | 'Grande';
+    peso_personalizado?: number;
+  }
+) => {
+  const token = await getUserSession();
+
+  const res = await fetch(`${API_URL}/carrito/${usuarioId}/${productoId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo editar el producto del carrito');
+  return res.json();
+};
+
+// 5. Vaciar carrito
+export const vaciarCarritoUsuario = async () => {
+  const userId = await getUserId();
+  const token = await getUserSession();
+
+  const res = await fetch(`${API_URL}/carrito/vaciar/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo vaciar el carrito');
+  return res.json();
+};
+
+// 6. Eliminar producto del carrito
+export const eliminarProductoCarrito = async (productoId: number) => {
+  const userId = await getUserId();
+  const token = await getUserSession();
+
+  const res = await fetch(`${API_URL}/carrito/${userId}/${productoId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo eliminar el producto del carrito');
+  return res.json();
+};

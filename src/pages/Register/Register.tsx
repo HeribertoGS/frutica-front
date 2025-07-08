@@ -111,10 +111,10 @@ const Register: React.FC = () => {
 
       console.log('✅ Login con Google exitoso:', loginResponse);
 
-      if (loginResponse.jwtToken) {
-        await saveUserSession(loginResponse.jwtToken);
+      if (loginResponse.jwtToken && loginResponse.usuario?.role) {
+        await saveUserSession(loginResponse.jwtToken, loginResponse.usuario.role);
         history.push('/fruta');
-      } else {
+      }else {
         alert('Tu cuenta de Google no está registrada. Por favor regístrate primero.');
       }
     } catch (error) {

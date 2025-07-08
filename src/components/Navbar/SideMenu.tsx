@@ -4,7 +4,7 @@ import {
   IonList, IonItem, IonIcon, IonLabel, IonMenuToggle
 } from '@ionic/react';
 import {
-  home, person, cart, heart, pin, card, time, flame, logOut, addCircle, pricetag
+  home, person, cart, heart, pin, card, time, flame, logOut, addCircle
 } from 'ionicons/icons';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useHistory } from 'react-router-dom';
@@ -26,20 +26,14 @@ const FruticaSideMenu: React.FC = () => {
   }, []);
 
   const cerrarSesion = async () => {
-    // 1️Borra token seguro
     await clearUserSession();
-  
-    // 2️ Borra localStorage normal
     localStorage.removeItem('userEmail');
     localStorage.removeItem('role');
     localStorage.removeItem('userId');
     localStorage.removeItem('carrito');
     localStorage.removeItem('direccionPredeterminada');
-  
-    // 3️ Redirige a login
-    history.push('/login'); // mejor '/login' que '/logout'
+    history.push('/login');
     window.location.reload();
-
   };
 
   if (!isMobile) return null;
@@ -58,78 +52,70 @@ const FruticaSideMenu: React.FC = () => {
         <IonContent>
           <IonList>
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/fruta" routerDirection="root">
+              <IonItem button routerLink="/fruta" routerDirection="forward">
                 <IonIcon slot="start" icon={home} />
                 <IonLabel>Inicio</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/perfil" routerDirection="root">
+              <IonItem button routerLink="/perfil" routerDirection="forward">
                 <IonIcon slot="start" icon={person} />
                 <IonLabel>Mi perfil</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/carrito" routerDirection="root">
+              <IonItem button routerLink="/carrito" routerDirection="forward">
                 <IonIcon slot="start" icon={cart} />
                 <IonLabel>Carrito de compra</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/LDeseos" routerDirection="root">
+              <IonItem button routerLink="/LDeseos" routerDirection="forward">
                 <IonIcon slot="start" icon={heart} />
                 <IonLabel>Lista de deseos</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/direcciones" routerDirection="root">
+              <IonItem button routerLink="/direcciones" routerDirection="forward">
                 <IonIcon slot="start" icon={pin} />
                 <IonLabel>Mis direcciones</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/pagos" routerDirection="root">
+              <IonItem button routerLink="/pagos" routerDirection="forward">
                 <IonIcon slot="start" icon={card} />
                 <IonLabel>Métodos de Pago</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/pedidos" routerDirection="root">
+              <IonItem button routerLink="/pedidos" routerDirection="forward">
                 <IonIcon slot="start" icon={time} />
                 <IonLabel>Historial de pedidos</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
             <IonMenuToggle autoHide={true}>
-              <IonItem button routerLink="/ofertas" routerDirection="root">
+              <IonItem button routerLink="/ofertas" routerDirection="forward">
                 <IonIcon slot="start" icon={flame} />
                 <IonLabel>Mejores ofertas</IonLabel>
               </IonItem>
             </IonMenuToggle>
 
-            {/* Mostrar opciones extra solo si el rol es admin */}
             {rol === 'admin' && (
-              <>
-          <IonMenuToggle autoHide={true}>
-             <IonItem button onClick={() => {
-             history.push('/admin/forms');
-            window.location.reload(); // 🔄 fuerza recarga
-              }}>
-          <IonIcon slot="start" icon={addCircle} />
-          <IonLabel>Agregar producto</IonLabel>
-        </IonItem>
-            </IonMenuToggle>
-
-              </>
+              <IonMenuToggle autoHide={true}>
+                <IonItem button routerLink="/admin/forms" routerDirection="forward">
+                  <IonIcon slot="start" icon={addCircle} />
+                  <IonLabel>Agregar producto</IonLabel>
+                </IonItem>
+              </IonMenuToggle>
             )}
 
-            {/* Botón de cerrar sesión */}
             <IonMenuToggle autoHide={false}>
               <IonItem button onClick={() => setMostrarConfirmacion(true)}>
                 <IonIcon slot="start" icon={logOut} />
