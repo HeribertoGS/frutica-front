@@ -19,15 +19,25 @@ import {
 } from '../../service/api';
 import { useIonToast } from '@ionic/react';
 import { useLocation } from 'react-router';
+import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
+type DireccionConCoord = {
+  direccion_k: number;
+  es_predeterminada: boolean;
+  latitud?: number;
+  longitud?: number;
+  maps_url?: string;
+  municipio: string;
+  estado: string;
+} & Direccion;
 
-type DireccionConCoord = Direccion & { direccion_k: number };
 
 const Direcciones: React.FC = () => {
-  const [direccionActual, setDireccionActual] = useState<number | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [modoFormulario, setModoFormulario] = useState<'crear' | 'editar'>('crear');
   const [direccionTemp, setDireccionTemp] = useState<DireccionConCoord | null>(null);
   const [direccionAEditar, setDireccionAEditar] = useState<DireccionConCoord | null>(null);
+  const [mostrarConfirmEliminar, setMostrarConfirmEliminar] = useState(false);
+  const [idDireccionAEliminar, setIdDireccionAEliminar] = useState<number | null>(null);
   const [direcciones, setDirecciones] = useState<DireccionConCoord[]>([]);
   const [mostrarMapa, setMostrarMapa] = useState(false);
   const [present] = useIonToast();
@@ -38,10 +48,15 @@ const Direcciones: React.FC = () => {
 
   const cargarDirecciones = async () => {
     try {
-      const data = await obtenerMisDirecciones();
+      const data: DireccionConCoord[] = await obtenerMisDirecciones();
       setDirecciones(data);
-      const predet = data.find((d: any) => d.predeterminada === true);
-      if (predet) setDireccionActual(predet.direccion_k);
+
+      const predet = data.find(d => d.es_predeterminada);
+      if (predet) {
+        localStorage.setItem('direccionPredeterminada', JSON.stringify(predet));
+      } else {
+        localStorage.removeItem('direccionPredeterminada');
+      }
 
       if (localStorage.getItem('volver_a_compra') && origen !== 'compra') {
         localStorage.removeItem('volver_a_compra');
@@ -52,6 +67,15 @@ const Direcciones: React.FC = () => {
       present({ message: 'Error al cargar direcciones', color: 'danger', duration: 2000 });
     }
   };
+
+  useEffect(() => {
+    const handler = () => cargarDirecciones();
+    window.addEventListener('direccionPredeterminadaCambiada', handler);
+
+    return () => {
+      window.removeEventListener('direccionPredeterminadaCambiada', handler);
+    };
+  }, []);
 
   useEffect(() => {
     cargarDirecciones();
@@ -71,7 +95,17 @@ const Direcciones: React.FC = () => {
   const marcarComoActual = async (id: number) => {
     try {
       await marcarDireccionPredeterminada(id);
-      await cargarDirecciones();
+      setDirecciones(prev => prev.map(d => ({
+        ...d,
+        es_predeterminada: d.direccion_k === id
+      })));
+
+      const nuevaPredeterminada = direcciones.find(d => d.direccion_k === id);
+      if (nuevaPredeterminada) {
+        localStorage.setItem('direccionPredeterminada', JSON.stringify(nuevaPredeterminada));
+        window.dispatchEvent(new CustomEvent('direccionPredeterminadaCambiada'));
+      }
+
       present({ message: 'Dirección marcada como predeterminada', color: 'success', duration: 2000 });
 
       if (origen === 'compra') {
@@ -81,6 +115,7 @@ const Direcciones: React.FC = () => {
     } catch (error) {
       console.error('Error al marcar como predeterminada:', error);
       present({ message: 'Error marcando como predeterminada', color: 'danger', duration: 2000 });
+      cargarDirecciones();
     }
   };
 
@@ -116,18 +151,23 @@ const Direcciones: React.FC = () => {
 
           {direcciones.map((direccion) => (
             <div className="item-direccion" key={direccion.direccion_k}>
-              <IonCard className={`direccion-card ${direccionActual === direccion.direccion_k ? 'predeterminada' : ''}`}>
+              <IonCard className={`direccion-card ${direccion.es_predeterminada ? 'predeterminada' : ''}`}>
                 <IonCardContent>
                   <div className="direccion-header">
                     <strong>{direccion.calle}</strong>
-                    <span className="telefono">Tel: {direccion.telefono}</span>
+                    {direccion.es_predeterminada && (
+                      <span className='etiqueta-predeterminada'>Predeterminada</span>
+                    )}
                   </div>
                   <p className="direccion-texto">
                     <IonIcon icon={locationOutline} className="icono-ubicacion" />
                     {`${direccion.calle} ${direccion.numero}, ${direccion.colonia}, ${direccion.municipio}, ${direccion.estado}, CP ${direccion.cp}. Referencias: ${direccion.referencia}`}
                   </p>
                   <div className="botones-direccion">
-                    <IonButton color="danger" size="small" onClick={() => eliminar(direccion.direccion_k)}>
+                    <IonButton color="danger" size="small" onClick={() => {
+                      setIdDireccionAEliminar(direccion.direccion_k);
+                      setMostrarConfirmEliminar(true);
+                    }}>
                       <IonIcon icon={trashOutline} slot="start" />Eliminar
                     </IonButton>
                     <IonButton color="warning" size="small" onClick={() => abrirModalEditar(direccion)}>
@@ -136,9 +176,14 @@ const Direcciones: React.FC = () => {
                     <IonButton color="medium" size="small" onClick={() => abrirMapaVerUbicacion(direccion)}>
                       <IonIcon icon={eyeOutline} slot="start" />Ver ubicación
                     </IonButton>
-                    <IonButton color="success" size="small" onClick={() => marcarComoActual(direccion.direccion_k)} fill={direccionActual === direccion.direccion_k ? 'solid' : 'outline'}>
+                    <IonButton
+                      color="success"
+                      size="small"
+                      onClick={() => marcarComoActual(direccion.direccion_k)}
+                      fill={direccion.es_predeterminada ? 'solid' : 'outline'}
+                    >
                       <IonIcon icon={checkmarkCircleOutline} slot="start" />
-                      {direccionActual === direccion.direccion_k ? 'Actual' : 'Elegir como actual'}
+                      {direccion.es_predeterminada ? 'Actual' : 'Elegir como actual'}
                     </IonButton>
                   </div>
                 </IonCardContent>
@@ -148,7 +193,6 @@ const Direcciones: React.FC = () => {
         </div>
       </IonContent>
 
-      {/* Modal formulario */}
       <IonModal isOpen={mostrarFormulario} onDidDismiss={() => setMostrarFormulario(false)}>
         <div className="contenedor-modal">
           <DireccionForm
@@ -161,12 +205,14 @@ const Direcciones: React.FC = () => {
             onGuardar={async (direccion) => {
               try {
                 if (modoFormulario === 'crear') {
+                  const { es_predeterminada, ...direccionLimpia } = direccion;
+
                   const nueva = await guardarDireccion({
-                    ...direccion,
+                    ...direccionLimpia,
                     maps_url: '',
                     latitud: 0,
                     longitud: 0,
-                    es_publica: false,
+                    es_publica: false
                   });
 
                   setDireccionTemp({
@@ -174,15 +220,33 @@ const Direcciones: React.FC = () => {
                     direccion_k: nueva.direccion_k,
                     municipio: nueva.municipio,
                     estado: nueva.estado,
+                    latitud: nueva.latitud,
+                    longitud: nueva.longitud,
+                    maps_url: nueva.maps_url,
+                    es_predeterminada: nueva.es_predeterminada ?? false
                   });
 
                   setMostrarFormulario(false);
                   setMostrarMapa(true);
+                  await cargarDirecciones();
+
                 } else {
                   await editarDireccion(direccionAEditar!.direccion_k, direccion);
-                  present({ message: 'Dirección actualizada.', color: 'success', duration: 2000 });
+
+                  setDireccionTemp({
+                    ...direccion,
+                    direccion_k: direccionAEditar!.direccion_k,
+                    municipio: direccion.municipio,
+                    estado: direccion.estado,
+                    es_predeterminada: direccionAEditar!.es_predeterminada,
+                    latitud: undefined,
+                    longitud: undefined,
+                    maps_url: undefined
+                  });
+
                   setMostrarFormulario(false);
-                  cargarDirecciones();
+                  setMostrarMapa(true);
+                  present({ message: 'Dirección actualizada. Selecciona la ubicación en el mapa.', color: 'success', duration: 2000 });
                 }
               } catch (error) {
                 console.error('Error al guardar/editar dirección:', error);
@@ -193,7 +257,6 @@ const Direcciones: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* Modal mapa */}
       {direccionTemp && (
         <DireccionMapa
           isOpen={mostrarMapa}
@@ -216,6 +279,21 @@ const Direcciones: React.FC = () => {
           }}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={mostrarConfirmEliminar}
+        onClose={() => setMostrarConfirmEliminar(false)}
+        onConfirm={() => {
+          if (idDireccionAEliminar !== null) {
+            eliminar(idDireccionAEliminar);
+          }
+          setMostrarConfirmEliminar(false);
+        }}
+        mensaje="¿Deseas eliminar esta dirección?"
+        detalle="Se eliminará la dirección de forma permanente."
+        textoConfirmar="Sí, eliminar"
+        textoCancelar="Cancelar"
+      />
     </FruticaLayout>
   );
 };

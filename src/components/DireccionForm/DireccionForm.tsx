@@ -11,10 +11,11 @@ export interface Direccion {
   cp: string;
   pais: string;
   referencia: string;
-  telefono: string;
   maps_url?: string;
-  lat?: number;
-  lng?: number;
+  latitud?: number;
+  longitud?: number;
+  es_predeterminada?: boolean;
+  direccion_k?: number;
 }
 
 interface DireccionFormProps {
@@ -36,7 +37,6 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
     cp: '',
     pais: 'Mexico',
     referencia: '',
-    telefono: '',
   });
 
   const [camposVacios, setCamposVacios] = useState<(keyof Direccion)[]>([]);
@@ -76,7 +76,7 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
   };
 
   const handleSubmit = () => {
-    const obligatorios: (keyof Direccion)[] = ['calle', 'numero', 'colonia', 'cp', 'telefono'];
+    const obligatorios: (keyof Direccion)[] = ['calle', 'numero', 'colonia', 'cp'];
     const vacios = obligatorios.filter(campo => !form[campo] || (campo === 'cp' && form[campo].length !== 5));
 
     setCamposVacios(vacios);
@@ -91,7 +91,21 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
       return;
     }
 
+  if (modo === 'crear') {
+    // Primero guarda los datos básicos
+    onGuardar({
+      ...form,
+        pais: form.pais || 'Mexico',
+      latitud: 0, // Valor temporal
+      longitud: 0,
+      maps_url: ''
+    });
+    // Luego debería abrirse el mapa para seleccionar ubicación
+  } else {
+    // En edición, guarda directamente
     onGuardar(form);
+  }
+
   };
 
   return (
@@ -136,36 +150,37 @@ const DireccionForm: React.FC<DireccionFormProps> = ({ modo, direccionInicial, o
             onIonChange={(e) => handleChange('numero', e.detail.value!)}
             className={camposVacios.includes('numero') ? 'input-error' : ''}
           />
-          <IonInput
-            label="Código Postal:"
-            inputMode="numeric"
-            value={form.cp}
-            maxlength={5}
-            placeholder="Ej. 68000"
-            onIonChange={(e) => handleCodigoPostal(e.detail.value || '')}
-            className={camposVacios.includes('cp') ? 'input-error' : ''}
-          />
+      <IonInput
+    label="Código Postal:"
+    inputMode="numeric"
+    value={form.cp}
+    maxlength={5}
+    placeholder="Ej. 68000"
+    onIonChange={(e) => handleCodigoPostal(e.detail.value || '')}
+    className={camposVacios.includes('cp') ? 'input-error' : ''}
+    readonly={modo === 'editar'} // 🔥 BLOQUEAR EN EDICIÓN
+  />
           <IonInput
             label="Estado:"
             value={form.estado}
             readonly
           />
-          <IonInput
-            label="Teléfono:"
-            inputMode="tel"
-            value={form.telefono}
-            maxlength={10}
-            placeholder="Ej. 9511234567"
-            onIonChange={(e) => handleChange('telefono', (e.detail.value || '').replace(/\D/g, '').slice(0, 10))}
-            className={!form.telefono || form.telefono.length !== 10 ? 'input-error' : ''}
-          />
+         {/* NOTA EXPLICATIVA EN MODO EDICIÓN */}
+  {modo === 'editar' && (
+    <div className="nota-edicion">
+      <small style={{ color: '#666', fontSize: '0.8em' }}>
+        💡 Para cambiar el código postal, crea una nueva dirección
+      </small>
+    </div>
+  )}
         </div>
       </div>
 
       <div className="botones-formulario">
         <IonButton color="warning" onClick={onCancelar}>Volver</IonButton>
-        <IonButton color="success" onClick={handleSubmit}>Guardar y seleccionar ubicación</IonButton>
-      </div>
+<IonButton color="success" onClick={handleSubmit}>
+  {modo === 'crear' ? 'Guardar y seleccionar ubicación' : 'Actualizar y seleccionar ubicación'}
+</IonButton>      </div>
     </div>
   );
 };

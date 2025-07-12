@@ -11,42 +11,49 @@ const FruticaDesktopHeader: React.FC = () => {
   const isMobile = useIsMobile();
   const history = useHistory();
   const { carrito } = useCarrito();
-  const [codigoPostal, setCodigoPostal] = useState('00000');
+  const [cp, setCp] = useState('00000');
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [rol, setRol] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Función para actualizar CP desde localStorage
+  const actualizarCP = () => {
     const direccion = localStorage.getItem('direccionPredeterminada');
     if (direccion) {
       try {
         const data = JSON.parse(direccion);
-        if (data.codigoPostal) setCodigoPostal(data.codigoPostal);
+        if (data.cp) setCp(data.cp);
       } catch (err) {
-        console.error('Error al leer dirección predeterminada:', err);
+        console.error('Error leyendo dirección predeterminada:', err);
       }
     }
+  };
 
+  useEffect(() => {
+    // 1. Cargar rol de usuario
     getUserRole().then(setRol);
+
+    // 2. Cargar CP inicial y configurar listener
+    actualizarCP();
+    window.addEventListener('direccionPredeterminadaCambiada', actualizarCP);
+
+    return () => {
+      window.removeEventListener('direccionPredeterminadaCambiada', actualizarCP);
+    };
   }, []);
 
   const calcularTotal = () => {
     return carrito.reduce((total, p) => total + (p.precio * p.cantidad), 0).toFixed(2);
   };
+
   const cerrarSesion = async () => {
-    // 1️⃣ Borra token seguro
     await clearUserSession();
-  
-    // 2️⃣ Borra localStorage normal
     localStorage.removeItem('userEmail');
     localStorage.removeItem('role');
     localStorage.removeItem('userId');
     localStorage.removeItem('carrito');
     localStorage.removeItem('direccionPredeterminada');
-  
-    // 3️⃣ Redirige a login
-    history.push('/login'); // mejor '/login' que '/logout'
+    history.push('/login');
     window.location.reload();
-
   };
 
   if (isMobile) return null;
@@ -55,7 +62,6 @@ const FruticaDesktopHeader: React.FC = () => {
     <>
       <div className="desktop-header">
         <div className="top-bar-row">
-
           {/* LOGO */}
           <div className="left-section">
             <IonRouterLink routerLink="/fruta" className="bottom-link">
@@ -79,7 +85,7 @@ const FruticaDesktopHeader: React.FC = () => {
           <div className="right-section">
             <div className="envio">
               <span className="envio-label">Envío en</span>
-              <span className="envio-cp">CP {codigoPostal}</span>
+              <span className="envio-cp">CP {cp}</span>
               <span className="material-icons icon-white">place</span>
             </div>
 
@@ -98,22 +104,20 @@ const FruticaDesktopHeader: React.FC = () => {
             </IonRouterLink>
 
             {rol === 'admin' && (
-              <>
-           <span
-  className="material-icons icon-white bottom-link"
-  style={{ cursor: 'pointer' }}
-  onClick={() => {
-    history.push('/admin/forms');
-  }}
->
-  add_circle
-</span>
-
-              </>
+              <span
+                className="material-icons icon-white bottom-link"
+                style={{ cursor: 'pointer' }}
+                onClick={() => history.push('/admin/forms')}
+              >
+                add_circle
+              </span>
             )}
 
-            {/* Cerrar sesión con confirmación */}
-            <span className="material-icons icon-white bottom-link" style={{ cursor: 'pointer' }} onClick={() => setMostrarConfirmacion(true)}>
+            <span 
+              className="material-icons icon-white bottom-link" 
+              style={{ cursor: 'pointer' }} 
+              onClick={() => setMostrarConfirmacion(true)}
+            >
               logout
             </span>
           </div>

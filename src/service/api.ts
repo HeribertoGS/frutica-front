@@ -617,22 +617,28 @@ export const eliminarDetalleFactura = async (id: number) => {
 // ----------- DIRECCIONES -----------
 
 export interface DireccionData {
+  direccion_k?: number; // Agregado porque parece que lo necesitas
   calle: string;
   numero: string;
   colonia: string;
   municipio: string;
   estado: string;
+  pais: string;
   cp: string;
   referencia?: string;
   latitud?: number;
   longitud?: number;
   maps_url?: string;
   es_publica?: boolean;
+  es_predeterminada?: boolean; // Cambiado a opcional si no siempre es requerida
 }
 
 // 1. Guardar nueva dirección
 export const guardarDireccion = async (data: DireccionData, token?: string) => {
   if (!token) token = await getToken();
+
+  console.log('👉 Datos que se enviarán al backend:', data);
+
   const res = await fetch(`${API_URL}/direcciones`, {
     method: 'POST',
     headers: {
@@ -641,9 +647,16 @@ export const guardarDireccion = async (data: DireccionData, token?: string) => {
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('No se pudo guardar la dirección');
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('❌ Error del backend:', errorText); // Mostrar qué dice el backend
+    throw new Error('No se pudo guardar la dirección');
+  }
+
   return res.json();
 };
+
 
 // 2. Obtener todas tus direcciones
 export const obtenerMisDirecciones = async () => {
@@ -717,7 +730,7 @@ export const eliminarDireccion = async (id: number, token?: string) => {
 // 7. Marcar dirección como predeterminada
 export const marcarDireccionPredeterminada = async (id: number, token?: string) => {
   if (!token) token = await getToken();
-  const res = await fetch(`${API_URL}/direcciones/${id}/predeterminada`, {
+  const res = await fetch(`${API_URL}/direcciones/${id}/marcar-predeterminada`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,

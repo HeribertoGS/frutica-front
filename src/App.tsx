@@ -76,7 +76,7 @@ const App: React.FC = () => (
           <Route path="/admin/oferta" component={OfertaCrear} exact />
           <Route path="/admin/forms" component={Forms} exact />
 
-          {/* Redirección principal (una sola) 
+        {/* Redirección principal (una sola)
           <Redirect exact from="/" to="/login" />*/}
         </IonRouterOutlet>
       </IonReactRouter>
