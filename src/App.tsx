@@ -57,7 +57,8 @@ const App: React.FC = () => (
           {/* Rutas principales */}
           <Route path="/fruta" component={Fruta} exact />
           <Route path="/registro" component={Register} exact />
-          <Route path="/producto" component={Producto} exact />
+{/* Detalle producto */}
+          <Route path="/producto/:id" component={Producto} exact />
           <Route path="/perfil" component={Perfil} exact />
           <Route path="/carrito" component={Carrito} exact />
           <Route path="/LDeseos" component={ListaDeseos} exact />

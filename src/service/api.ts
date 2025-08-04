@@ -153,9 +153,13 @@ export const crearProducto = async (producto: any, fotos: File[]) => {
     formData.append('foto', file); // debe coincidir con el nombre en FilesInterceptor
   });
 
-  for (const key in producto) {
-    formData.append(key, producto[key]);
-  }
+ for (const key in producto) {
+  const valor = producto[key];
+  if (typeof valor === 'boolean') {
+    formData.append(key, valor ? 'true' : 'false');
+  } else if (valor !== undefined && valor !== null) {
+    formData.append(key, valor.toString());
+  }}
 
   const res = await fetch(`${API_URL}/productos/crear`, {
     method: 'POST',
@@ -637,7 +641,7 @@ export interface DireccionData {
 export const guardarDireccion = async (data: DireccionData, token?: string) => {
   if (!token) token = await getToken();
 
-  console.log('👉 Datos que se enviarán al backend:', data);
+  console.log(' Datos que se enviarán al backend:', data);
 
   const res = await fetch(`${API_URL}/direcciones`, {
     method: 'POST',
@@ -1134,9 +1138,9 @@ export interface OfertaData {
   productoId: number;
   precio_oferta: number;
   porcentaje_descuento?: number;
-  inicio: string;            // 👈 corregido
-  fin: string;               // 👈 corregido
-  descripcion?: string;      // 👈 opcional
+  inicio: string;            
+  fin: string;             
+  descripcion?: string;      
   activa?: boolean;
 }
 
@@ -1394,7 +1398,7 @@ export interface CreatePagoData {
       const data = await response.json();
       return data; // { clientSecret, paymentId, estadoPago, totalCompra }
     } catch (error) {
-      console.error('❌ Error al iniciar pago con tarjeta:', error);
+      console.error('Error al iniciar pago con tarjeta:', error);
       throw error;
     }
   };
@@ -1518,7 +1522,7 @@ export interface PedidoData {
 
   if (!res.ok) {
     console.error('📜 Error del servidor:', responseData);
-    throw new Error(responseData.message || '❌ No se pudo crear el pedido');
+    throw new Error(responseData.message || ' No se pudo crear el pedido');
   }
 
   return responseData;
@@ -1542,7 +1546,7 @@ export interface PedidoData {
   
     if (!res.ok) {
       const errorData = await res.json();
-      console.error('❌ Error al obtener pedidos:', errorData);
+      console.error(' Error al obtener pedidos:', errorData);
       throw new Error(errorData.message || 'Error al obtener pedidos');
     }
   
@@ -1585,7 +1589,7 @@ export interface PedidoData {
   // 5. Obtener todos los pedidos (admin)
   export async function obtenerTodosPedidos() {
     try {
-      const token = await getToken(); // 🔥 Aquí usamos tu función
+      const token = await getToken(); // Aquí usamos tu función
       const response = await fetch(`${API_URL}/pedidos`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1597,7 +1601,7 @@ export interface PedidoData {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('❌ Error obteniendo todos los pedidos:', error);
+      console.error('Error obteniendo todos los pedidos:', error);
       throw error;
     }
   }
@@ -1669,26 +1673,56 @@ export const cambiarEstadoPedido = async (pedidoId: number, nuevoEstado: string,
     return res.json();
   };
   
-// ---------- CARRITO ----------
-
+  ///***CARRITO** */
+export interface CrearProductoCarritoDto {
+  usuarioId: number;
+  productoId: number;
+  cantidad: number;
+  tipo_medida: 'kg' | 'pieza';
+  peso_personalizado?: number;
+  tamano?: 'Chico' | 'Mediano' | 'Grande';
+}
 
 // 1. Obtener el carrito de un usuario
+
+// Reemplaza tu función obtenerCarritoUsuario en api.ts con esta versión
+
 export const obtenerCarritoUsuario = async () => {
   const userId = await getUserId();
   const token = await getUserSession();
 
+  console.log('Obteniendo carrito para usuario:', userId);
+
   const res = await fetch(`${API_URL}/carrito/${userId}`, {
+    method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
     },
   });
 
-  if (!res.ok) throw new Error('No se pudo obtener el carrito');
-  return res.json();
+  // Si el carrito no existe (404), devolver un carrito vacío
+  if (res.status === 404) {
+    console.log('Carrito no existe para usuario', userId, '- devolviendo carrito vacío');
+    return { 
+      items: [],
+      usuario_id: userId,
+      total: 0
+    };
+  }
+
+  // Si hay otros errores, lanzar la excepción
+  if (!res.ok) {
+    console.error(' Error en obtenerCarritoUsuario:', res.status, res.statusText);
+    throw new Error(`Error ${res.status}: No se pudo obtener el carrito`);
+  }
+
+  const data = await res.json();
+  console.log('Carrito obtenido exitosamente:', data);
+  return data;
 };
 
 // 2. Agregar producto al carrito
-export const agregarProductoAlCarrito = async (data: any) => {
+export const agregarProductoAlCarrito = async (data: CrearProductoCarritoDto) => {
   const token = await getUserSession();
 
   const res = await fetch(`${API_URL}/carrito/agregar`, {
@@ -1721,7 +1755,6 @@ export const agregarTodosDesdeLista = async () => {
 
 // 4. Editar producto del carrito
 export const editarProductoCarrito = async (
-  usuarioId: number,
   productoId: number,
   data: {
     nuevaCantidad: number;
@@ -1730,9 +1763,10 @@ export const editarProductoCarrito = async (
     peso_personalizado?: number;
   }
 ) => {
+  const userId = await getUserId();
   const token = await getUserSession();
 
-  const res = await fetch(`${API_URL}/carrito/${usuarioId}/${productoId}`, {
+  const res = await fetch(`${API_URL}/carrito/${userId}/${productoId}`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -1762,11 +1796,14 @@ export const vaciarCarritoUsuario = async () => {
 };
 
 // 6. Eliminar producto del carrito
-export const eliminarProductoCarrito = async (productoId: number) => {
+export const eliminarProductoCarrito = async (
+  productoId: number,
+  tipo_medida: 'kg' | 'pieza'
+) => {
   const userId = await getUserId();
   const token = await getUserSession();
 
-  const res = await fetch(`${API_URL}/carrito/${userId}/${productoId}`, {
+  const res = await fetch(`${API_URL}/carrito/${userId}/${productoId}/${tipo_medida}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,

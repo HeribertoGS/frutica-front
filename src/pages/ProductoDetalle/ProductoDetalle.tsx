@@ -7,11 +7,11 @@ import FruticaLayout from '../../components/Layout/FruticaLayout';
 import ProductoCard from '../../components/productos/ProductoCard';
 
 const ProductoDetalle: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // 👈 Obtenemos el id de la URL
+  const { id } = useParams<{ id: string }>(); //  Obtenemos el id de la URL
 
   return (
     <FruticaLayout>
-      <ProductoCard id={parseInt(id)} /> {/* 👈 Le pasamos el id como prop */}
+      <ProductoCard id={parseInt(id)} /> {/* Le pasamos el id como prop */}
     </FruticaLayout>
   );
 };

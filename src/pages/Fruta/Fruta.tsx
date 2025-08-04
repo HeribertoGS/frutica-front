@@ -21,7 +21,7 @@ const Fruta: React.FC = () => {
         const data = await obtenerProductos();
         setProductos(data);
       } catch (error) {
-        console.error('❌ Error al cargar productos:', error);
+        console.error(' Error al cargar productos:', error);
         present({ message: 'Error al cargar productos', duration: 2000, color: 'danger' });
       }
     };
@@ -36,7 +36,7 @@ const Fruta: React.FC = () => {
         await agregarAListaDeseos(producto.producto_k);
       }
   
-      await toggleWishlist(producto.producto_k); // 🔥 Que espere terminar de actualizar
+      await toggleWishlist(producto.producto_k); 
   
       present({
         message: isInWishlist(producto.producto_k)
@@ -46,7 +46,7 @@ const Fruta: React.FC = () => {
         color: "medium",
       });
     } catch (err) {
-      console.error('❌ Error al actualizar lista de deseos:', err);
+      console.error('Error al actualizar lista de deseos:', err);
       present({ message: 'Error en la lista de deseos', duration: 2000, color: 'danger' });
     }
   };
@@ -122,22 +122,10 @@ const Fruta: React.FC = () => {
                     </IonCardHeader>
 
                     <IonCardContent>
-                      {carrito.find((p) => p.id === producto.producto_k) ? (
-                        <div className="fruta-controles">
-                          <IonButton size="small" fill="solid" onClick={() => disminuir(producto.producto_k)} className="fruta-boton-contador">
-                            <IonIcon icon={removeOutline} />
-                          </IonButton>
-                          <span className="fruta-cantidad">{carrito.find(p => p.id === producto.producto_k)?.cantidad || 1}</span>
-                          <IonButton size="small" fill="solid" onClick={() => aumentar(producto.producto_k)} className="fruta-boton-contador">
-                            <IonIcon icon={addOutline} />
-                          </IonButton>
-                        </div>
-                      ) : (
-                        <IonButton className="fruta-btn-agregar" expand="block" onClick={() => handleAgregar(producto)}>
+                        <IonButton className="fruta-btn-agregar" expand="block" onClick={() =>irADetalle(producto.producto_k)}>
                           <IonIcon icon={addOutline} slot="start" />
                           Agregar
                         </IonButton>
-                      )}
                     </IonCardContent>
                   </IonCard>
                 </IonCol>

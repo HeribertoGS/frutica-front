@@ -6,12 +6,14 @@ import { useCarrito } from '../../contexts/carritoContext';
 import { useEffect, useState } from 'react';
 import { obtenerProductos } from '../../service/api';
 import './ListaDeseos.css';
+import { useHistory } from 'react-router';
 
 const ListaDeseos: React.FC = () => {
   const { wishlist } = useWishlist();
   const { carrito, agregarAlCarrito, actualizarCantidad } = useCarrito();
   const [productos, setProductos] = useState<any[]>([]);
   const [present] = useIonToast();
+  const history = useHistory();
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -45,6 +47,10 @@ const ListaDeseos: React.FC = () => {
     }
   };
 
+    const irADetalle = (id: number) => {
+    history.push(`/producto/${id}`);
+  };
+
   return (
     <FruticaLayout>
       <IonContent className="ion-padding">
@@ -73,28 +79,10 @@ const ListaDeseos: React.FC = () => {
                     </IonCardHeader>
 
                     <IonCardContent>
-                      {carrito.find((p) => p.id === producto.producto_k) ? (
-                        <div className="fruta-controles">
-                          <IonButton size="small" fill="solid" onClick={() => disminuir(producto.producto_k)} className="fruta-boton-contador">
-                            <IonIcon icon={removeOutline} />
-                          </IonButton>
-                          <span className="fruta-cantidad">{carrito.find(p => p.id === producto.producto_k)?.cantidad || 1}</span>
-                          <IonButton size="small" fill="solid" onClick={() => aumentar(producto.producto_k)} className="fruta-boton-contador">
-                            <IonIcon icon={addOutline} />
-                          </IonButton>
-                        </div>
-                      ) : (
-                        <IonButton className="fruta-btn-agregar" expand="block" onClick={() => agregarAlCarrito({
-                          id: producto.producto_k,
-                          nombre: producto.nombre,
-                          precio: producto.precio_por_kg ?? producto.precio_por_pieza ?? 0,
-                          imagen: producto.foto?.[0] || '',
-                          cantidad: 1,
-                        })}>
+                  <IonButton className="fruta-btn-agregar" expand="block" onClick={() =>irADetalle(producto.producto_k)}>
                           <IonIcon icon={addOutline} slot="start" />
                           Agregar
                         </IonButton>
-                      )}
                     </IonCardContent>
                   </IonCard>
                 </IonCol>
