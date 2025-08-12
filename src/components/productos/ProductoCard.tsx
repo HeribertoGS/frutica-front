@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   IonImg, IonSegment, IonSegmentButton, IonLabel, IonIcon,
-  IonItem, IonSelect, IonSelectOption, useIonToast
+  IonItem, IonSelect, IonSelectOption, useIonToast, SegmentChangeEventDetail, SelectChangeEventDetail
 } from '@ionic/react';
 import { add, remove } from 'ionicons/icons';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -179,7 +179,7 @@ const calcularPrecio = () => {
                 )}
               </div>
 
-              <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
+              <IonSegment value={unidad} onIonChange={(e: CustomEvent<SegmentChangeEventDetail>)=> setUnidad(e.detail.value as 'pieza' | 'kg')}>
                 <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
                 <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
               </IonSegment>
@@ -189,7 +189,8 @@ const calcularPrecio = () => {
                   <IonLabel position="stacked">Tamaño *</IonLabel>
                   <IonSelect 
                     value={tamano} 
-                    onIonChange={(e) => setTamano(e.detail.value)}
+                    onIonChange={(e: CustomEvent<SegmentChangeEventDetail>) => 
+                      setTamano(e.detail.value)}
                     placeholder="Selecciona un tamaño"
                   >
                     <IonSelectOption value="Chico">
@@ -292,7 +293,7 @@ const calcularPrecio = () => {
                 )}
               </div>
 
-              <IonSegment value={unidad} onIonChange={e => setUnidad(e.detail.value as 'pieza' | 'kg')}>
+              <IonSegment value={unidad} onIonChange={(e: CustomEvent<SegmentChangeEventDetail>)=> setUnidad(e.detail.value as 'pieza' | 'kg')}>
                 <IonSegmentButton value="pieza"><IonLabel>Pieza</IonLabel></IonSegmentButton>
                 <IonSegmentButton value="kg"><IonLabel>KG</IonLabel></IonSegmentButton>
               </IonSegment>
@@ -302,7 +303,7 @@ const calcularPrecio = () => {
                   <IonLabel position="stacked">Tamaño *</IonLabel>
                   <IonSelect 
                     value={tamano} 
-                    onIonChange={(e) => setTamano(e.detail.value)}
+                    onIonChange={(e: CustomEvent<SegmentChangeEventDetail>) => setTamano(e.detail.value)}
                     placeholder="Selecciona un tamaño"
                   >
                     <IonSelectOption value="Chico">

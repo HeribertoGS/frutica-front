@@ -1,22 +1,45 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import { saveUserSession, getUserSession, getUserId, getToken } from './secureStorage';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 
 const API = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL:import.meta.env.VITE_API_URL || 'http://localhost:4000/api', 
 });
+
+API.interceptors.request.use(async (config) => {
+  const token = await getUserSession();
+  if (token) {
+    config.headers = config.headers ?? {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Normaliza errores (status + message)
+function unwrapAxiosError(err: unknown): never {
+  const ax = err as AxiosError<any>;
+  const status = ax.response?.status;
+  const message =
+    ax.response?.data?.message ||
+    ax.message ||
+    'Error inesperado. Intenta de nuevo.';
+  const e = new Error(message) as Error & { status?: number };
+  e.status = status;
+  throw e;
+}
+
 interface RegistroData {
   nombre: string;
   apellido_paterno: string;
   sexo: string;
-  role: 'user' | 'admin'; // asegúrate de que esté bien tipeado
+  role: 'user' | 'admin';
   correo_electronico: string;
   contrasena: string;
 }
 
 export const registrarUsuario = async (data: RegistroData) => {
-  const res = await fetch(`http://localhost:4000/api/auth/registro`, {
+  const res = await fetch(`${API_URL}/auth/registro`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -31,7 +54,6 @@ export const registrarUsuario = async (data: RegistroData) => {
 };
 
 // -------- Login de usuario --------
-// Suponiendo que tu login es con el mismo DTO (si es diferente avísame)
 export const loginUsuario = async (email: string, password: string) => {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
@@ -40,33 +62,47 @@ export const loginUsuario = async (email: string, password: string) => {
   });
 
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Error al iniciar sesión');
+    // lee la respuesta y arma un Error con status
+    let msg = 'Error al iniciar sesión';
+    try {
+      const body = await res.json();
+      msg = body?.message || msg;
+    } catch {
+      const text = await res.text().catch(() => '');
+      if (text) msg = text;
+    }
+    const e: any = new Error(msg);
+    e.status = res.status;   // <-- AQUÍ guardamos el 403
+    throw e;
   }
-
   const data = await res.json();
-  console.log('✅ Login exitoso:', data);
   return data;
 };
 
 // Nuevo login con Google
 export const loginConGoogle = async (idTokenFirebase: string) => {
-  const res = await fetch('http://localhost:4000/api/auth/google-login', {
+  const res = await fetch(`${API_URL}/auth/google-login`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idToken: idTokenFirebase }),
   });
 
-  if (!res.ok) throw new Error('No se pudo iniciar sesión con Google');
+  if (!res.ok) {
+    let msg = 'No se pudo iniciar sesión con Google';
+    try {
+      const body = await res.json();
+      msg = body?.message || msg;
+    } catch {}
+    const e: any = new Error(msg);
+    e.status = res.status;
+    throw e;
+  }
 
   const data = await res.json();
-  if (data.jwtToken) {
-    await saveUserSession(data.jwtToken, data.role);
-  }
+  if (data.jwtToken) await saveUserSession(data.jwtToken, data.role);
   return data;
 };
+
 
 // ✅ Consultar si el usuario ya completó registro
 export const verificarDireccionUsuario = async (token: string) => {

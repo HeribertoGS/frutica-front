@@ -104,18 +104,27 @@ const FruticaDesktopHeader: React.FC = () => {
             </IonRouterLink>
 
             {rol === 'admin' && (
-              <span
-                className="material-icons icon-white bottom-link"
-                style={{ cursor: 'pointer' }}
-                onClick={() => history.push('/admin/forms')}
-              >
-                add_circle
-              </span>
+              <>
+                  <span className="material-icons icon-white"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => history.push('/admin/usuarios')}
+                  title="Formularios">supervisor_account</span>
+                
+
+                <span
+                  className="material-icons icon-white bottom-link"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => history.push('/admin/forms')}
+                  title="Formularios"
+                >
+                  add_circle
+                </span>
+              </>
             )}
 
-            <span 
-              className="material-icons icon-white bottom-link" 
-              style={{ cursor: 'pointer' }} 
+            <span
+              className="material-icons icon-white bottom-link"
+              style={{ cursor: 'pointer' }}
               onClick={() => setMostrarConfirmacion(true)}
             >
               logout
@@ -142,6 +151,8 @@ const FruticaDesktopHeader: React.FC = () => {
           <IonRouterLink routerLink="/pedidos" className="bottom-link">
             <span><span className="material-icons">history</span> Historial de compras</span>
           </IonRouterLink>
+
+        
         </div>
       </div>
 

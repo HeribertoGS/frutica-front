@@ -40,13 +40,12 @@ import ProductosCrear from './pages/admin/productosCrear';
 import CategoriasCrear from './pages/admin/categoriasCrear';
 import OfertaCrear from './pages/admin/ofertaCrear';
 import Forms from './pages/admin/forms';
-
+import UsersCard from './pages/admin/UsersCard';
 /* Context */
 import { CarritoProvider } from './contexts/carritoContext';
 
 /* Leaflet CSS */
 import 'leaflet/dist/leaflet.css';
-
 setupIonicReact();
 
 const App: React.FC = () => (
@@ -76,6 +75,8 @@ const App: React.FC = () => (
           <Route path="/admin/category" component={CategoriasCrear} exact />
           <Route path="/admin/oferta" component={OfertaCrear} exact />
           <Route path="/admin/forms" component={Forms} exact />
+          <Route path="/admin/usuarios" component={UsersCard} exact />
+        
 
         {/* Redirección principal (una sola)
           <Redirect exact from="/" to="/login" />*/}

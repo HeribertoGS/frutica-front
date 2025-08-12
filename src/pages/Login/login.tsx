@@ -8,6 +8,7 @@ import jwtDecode from 'jwt-decode';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { buscarCorreo, loginConGoogle, verificarCorreoGoogle } from '../../service/api';
+import { useIonToast } from '@ionic/react';
 
 // Firebase config
 const firebaseConfig = {
@@ -30,12 +31,16 @@ const Login: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loadingGoogle, setLoadingGoogle] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [present] = useIonToast();
     const history = useHistory();
 
     const togglePassword = () => setShowPassword(!showPassword);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+
         if (!email || !password) {
             setError('Todos los campos son obligatorios');
             return;
@@ -46,14 +51,30 @@ const Login: React.FC = () => {
             return;
         }
 
+        setLoading(true);
         try {
-            const res = await loginUsuario(email, password);
+            const res = await loginUsuario(email, password); // <- debe propagar err.status en api.ts
             await saveUserSession(res.jwtToken, res.role);
-            console.log('Sesión iniciada como:', res.role);
+            present({ message: '¡Bienvenido!', color: 'success', duration: 1200 });
             history.push('/fruta');
         } catch (err: any) {
             console.error('Error al iniciar sesión:', err);
+            if (err.status === 403) {
+                present({
+                    message: err.message || 'Tu cuenta no está activa.',
+                    color: 'warning',
+                    duration: 2500,
+                });
+            } else {
+                present({
+                    message: err.message || 'Credenciales incorrectas',
+                    color: 'danger',
+                    duration: 2000,
+                });
+            }
             setError(err.message || 'Error en el inicio de sesión');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -65,19 +86,34 @@ const Login: React.FC = () => {
             if (!user) throw new Error('No se pudo obtener usuario de Google');
 
             const idToken = await user.getIdToken();
-            const loginResponse = await loginConGoogle(idToken);
-
-            console.log('✅ Login con Google exitoso:', loginResponse);
+            const loginResponse = await loginConGoogle(idToken); // ideal: también propaga err.status=403
 
             if (loginResponse.jwtToken && loginResponse.usuario?.role) {
                 await saveUserSession(loginResponse.jwtToken, loginResponse.usuario.role);
+                present({ message: '¡Bienvenido!', color: 'success', duration: 1200 });
                 history.push('/fruta');
             } else {
-                alert('Tu cuenta de Google no está registrada. Por favor regístrate primero.');
+                present({
+                    message: 'Tu cuenta de Google no está registrada. Por favor regístrate primero.',
+                    color: 'medium',
+                    duration: 2500,
+                });
             }
-        } catch (error) {
-            console.error('❌ Error al iniciar sesión con Google:', error);
-            alert('Error al iniciar sesión con Google');
+        } catch (err: any) {
+            console.error('Error Google login:', err);
+            if (err.status === 403) {
+                present({
+                    message: err.message || 'Tu cuenta no está activa.',
+                    color: 'warning',
+                    duration: 2500,
+                });
+            } else {
+                present({
+                    message: 'Error al iniciar sesión con Google',
+                    color: 'danger',
+                    duration: 2000,
+                });
+            }
         } finally {
             setLoadingGoogle(false);
         }
@@ -120,10 +156,17 @@ const Login: React.FC = () => {
 
                 {error && <p className="error">{error}</p>}
 
-                <button type="submit" className="btn-verdeee">Entrar</button>
+                <button type="submit" className="btn-verdeee" disabled={loading}>
+                    {loading ? 'Entrando…' : 'Entrar'}
+                </button>
 
                 <div className="social-login">
-                    <button type="button" className="google" onClick={handleGoogleLogin} disabled={loadingGoogle}>
+                    <button
+                        type="button"
+                        className="google"
+                        onClick={handleGoogleLogin}
+                        disabled={loadingGoogle}
+                    >
                         {loadingGoogle ? 'Cargando...' : (
                             <>
                                 <i className="fa-brands fa-google icon"></i> Continuar con Google
@@ -133,7 +176,7 @@ const Login: React.FC = () => {
                 </div>
 
                 <p className="login-link">
-                    ¿No tienes cuenta? <Link to="/registro">Regístrate</Link> {/* 🔥 aquí corregido */}
+                    ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
                 </p>
             </form>
         </div>
