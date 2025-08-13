@@ -11,6 +11,7 @@ import { buscarCorreo, loginConGoogle, verificarCorreoGoogle } from '../../servi
 import { useIonToast } from '@ionic/react';
 
 // Firebase config
+
 const firebaseConfig = {
     apiKey: "AIzaSyAtzQ17oaS5hQ0sFsrVDkMdNbWp8z4gPW8",
     authDomain: "frutica-app.firebaseapp.com",
@@ -78,46 +79,32 @@ const Login: React.FC = () => {
         }
     };
 
+    //loginwighgoogle
     const handleGoogleLogin = async () => {
         setLoadingGoogle(true);
         try {
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            if (!user) throw new Error('No se pudo obtener usuario de Google');
+            if (!result?.user) throw new Error('No se pudo obtener usuario de Google');
 
-            const idToken = await user.getIdToken();
-            const loginResponse = await loginConGoogle(idToken); // ideal: también propaga err.status=403
+            const idToken = await result.user.getIdToken(true);
+            const { jwtToken, user } = await loginConGoogle(idToken); // <-- en api.ts ya guarda la sesión
 
-            if (loginResponse.jwtToken && loginResponse.usuario?.role) {
-                await saveUserSession(loginResponse.jwtToken, loginResponse.usuario.role);
-                present({ message: '¡Bienvenido!', color: 'success', duration: 1200 });
-                history.push('/fruta');
-            } else {
-                present({
-                    message: 'Tu cuenta de Google no está registrada. Por favor regístrate primero.',
-                    color: 'medium',
-                    duration: 2500,
-                });
-            }
+            if (!jwtToken || !user?.role) throw new Error('Respuesta inválida del servidor');
+
+            present({ message: '¡Bienvenido!', color: 'success', duration: 1200 });
+            history.push('/fruta');
         } catch (err: any) {
             console.error('Error Google login:', err);
-            if (err.status === 403) {
-                present({
-                    message: err.message || 'Tu cuenta no está activa.',
-                    color: 'warning',
-                    duration: 2500,
-                });
-            } else {
-                present({
-                    message: 'Error al iniciar sesión con Google',
-                    color: 'danger',
-                    duration: 2000,
-                });
-            }
+            present({
+                message: err?.response?.data?.message || err?.message || 'Error al iniciar sesión con Google',
+                color: err?.status === 403 ? 'warning' : 'danger',
+                duration: 2200,
+            });
         } finally {
             setLoadingGoogle(false);
         }
     };
+
 
     return (
         <div className="registro-wrapper">

@@ -9,7 +9,8 @@ import { IonModal, IonIcon } from '@ionic/react';
 import { loginConGoogle, registrarUsuario, guardarDireccion, editarDireccion } from "../../service/api";
 import { saveUserSession } from "../../service/secureStorage";
 import { eye, eyeOff } from 'ionicons/icons';
-import { useHistory, Link } from 'react-router-dom'; 
+import { useHistory, Link } from 'react-router-dom';
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtzQ17oaS5hQ0sFsrVDkMdNbWp8z4gPW8",
@@ -94,40 +95,35 @@ const Register: React.FC = () => {
         await saveUserSession(res.jwtToken, res.role);
         console.log('Token guardado en secureStorage');
         setMostrarDireccionForm(true);
-            // Forzar dirección obligatoria
-      localStorage.setItem('firstTime', 'true');
-      setMostrarDireccionForm(true);
+        // Forzar dirección obligatoria
+        localStorage.setItem('firstTime', 'true');
+        setMostrarDireccionForm(true);
       } catch (err) {
         console.error("Error al registrar usuario:", err);
       }
     }
   };
 
+  //loginwithgoogle
   const handleGoogleLogin = async () => {
     setLoadingGoogle(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      if (!user) throw new Error('No se pudo obtener usuario de Google');
+      if (!result?.user) throw new Error('No se pudo obtener usuario de Google');
 
-      const idToken = await user.getIdToken();
-      const loginResponse = await loginConGoogle(idToken);
+      const idToken = await result.user.getIdToken(true);
+      const { jwtToken, user } = await loginConGoogle(idToken); // <-- en api.ts ya guarda la sesión
 
-      console.log('Login con Google exitoso:', loginResponse);
-
-      if (loginResponse.jwtToken && loginResponse.usuario?.role) {
-        await saveUserSession(loginResponse.jwtToken, loginResponse.usuario.role);
-        history.push('/fruta');
-      }else {
-        alert('Tu cuenta de Google no está registrada. Por favor regístrate primero.');
-      }
-    } catch (error) {
+      if (!jwtToken || !user?.role) throw new Error('Respuesta inválida del servidor');
+      history.push('/fruta');
+    } catch (error: any) {
       console.error('Error al iniciar sesión con Google:', error);
-      alert('Error al iniciar sesión con Google');
+      alert(error?.response?.data?.message || error?.message || 'Error al iniciar sesión con Google');
     } finally {
       setLoadingGoogle(false);
     }
   };
+
 
   return (
     <div className="registro-wrapper">
@@ -190,59 +186,59 @@ const Register: React.FC = () => {
         <p className="login-link">¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link> {/* corregido aquí */}</p>
       </form>
 
-  <IonModal isOpen={mostrarDireccionForm} onDidDismiss={() => setMostrarDireccionForm(false)}>
-  <div style={{ padding: '1rem' }}>
-    <DireccionForm
-      modo="crear"
-      direccionInicial={direccionGuardada ?? undefined}
-      onCancelar={() => setMostrarDireccionForm(false)}
-      onGuardar={async (direccion) => {
-        try {
-          // Guardamos primero la dirección en backend para que nos regrese el maps_url
-      const direccionConUrl = await guardarDireccion(direccion);
+      <IonModal isOpen={mostrarDireccionForm} onDidDismiss={() => setMostrarDireccionForm(false)}>
+        <div style={{ padding: '1rem' }}>
+          <DireccionForm
+            modo="crear"
+            direccionInicial={direccionGuardada ?? undefined}
+            onCancelar={() => setMostrarDireccionForm(false)}
+            onGuardar={async (direccion) => {
+              try {
+                // Guardamos primero la dirección en backend para que nos regrese el maps_url
+                const direccionConUrl = await guardarDireccion(direccion);
 
-          // Guardamos localmente con el maps_url que sí sirve para el mapa
-    setDireccionGuardada({
-      ...direccionConUrl,
-      direccion_k: direccionConUrl.direccion_k,
-    });
-          setMostrarDireccionForm(false);
-          setMostrarMapa(true);
-        } catch (error) {
-          console.error(" Error al guardar dirección antes de mapa:", error);
-        }
-      }}
-    />
-  </div>
-</IonModal>
+                // Guardamos localmente con el maps_url que sí sirve para el mapa
+                setDireccionGuardada({
+                  ...direccionConUrl,
+                  direccion_k: direccionConUrl.direccion_k,
+                });
+                setMostrarDireccionForm(false);
+                setMostrarMapa(true);
+              } catch (error) {
+                console.error(" Error al guardar dirección antes de mapa:", error);
+              }
+            }}
+          />
+        </div>
+      </IonModal>
 
 
       <DireccionMapa
         isOpen={mostrarMapa}
         onClose={() => setMostrarMapa(false)}
-   onSelectLocation={async (coords) => {
-  if (direccionGuardada) {
-const direccionFinal = {
-  ...direccionGuardada,
-  id: direccionGuardada.direccion_k, 
-  latitud: coords.lat,
-  longitud: coords.lng,
-  maps_url: coords.maps_url,
-};
-    try {
-await editarDireccion(direccionFinal.id!, {
-  latitud: direccionFinal.latitud,
-  longitud: direccionFinal.longitud,
-  maps_url: direccionFinal.maps_url
-});
+        onSelectLocation={async (coords) => {
+          if (direccionGuardada) {
+            const direccionFinal = {
+              ...direccionGuardada,
+              id: direccionGuardada.direccion_k,
+              latitud: coords.lat,
+              longitud: coords.lng,
+              maps_url: coords.maps_url,
+            };
+            try {
+              await editarDireccion(direccionFinal.id!, {
+                latitud: direccionFinal.latitud,
+                longitud: direccionFinal.longitud,
+                maps_url: direccionFinal.maps_url
+              });
 
-localStorage.removeItem('firstTime');
-      history.push('/fruta');
-    } catch (err) {
-      console.error(' Error al guardar ubicación precisa:', err);
-    }
-  }
-}}
+              localStorage.removeItem('firstTime');
+              history.push('/fruta');
+            } catch (err) {
+              console.error(' Error al guardar ubicación precisa:', err);
+            }
+          }
+        }}
         direccion={direccionGuardada ?? undefined}
         redirigirA="/fruta"
       />

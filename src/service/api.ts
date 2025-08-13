@@ -81,27 +81,41 @@ export const loginUsuario = async (email: string, password: string) => {
 
 // Nuevo login con Google
 export const loginConGoogle = async (idTokenFirebase: string) => {
-  const res = await fetch(`${API_URL}/auth/google-login`, {
+  const res = await fetch(`${API_URL}/auth/google`, {  
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idToken: idTokenFirebase }),
   });
 
+  // Manejo de errores con mensaje del backend y status
   if (!res.ok) {
     let msg = 'No se pudo iniciar sesión con Google';
     try {
       const body = await res.json();
       msg = body?.message || msg;
-    } catch { }
+    } catch {}
     const e: any = new Error(msg);
     e.status = res.status;
     throw e;
   }
 
+  // Respuesta: soporta { jwtToken, user } y también { jwtToken, usuario }
   const data = await res.json();
-  if (data.jwtToken) await saveUserSession(data.jwtToken, data.role);
-  return data;
+  const user = data.user ?? data.usuario ?? null;
+  const role = user?.role ?? data.role ?? null;
+  const jwtToken = data.jwtToken ?? null;
+
+  if (!jwtToken || !user) {
+    // El backend debería devolver ambos; si no, falla para que el front muestre error
+    const e: any = new Error('Respuesta inválida del servidor');
+    e.status = 500;
+    throw e;
+  }
+  await saveUserSession(jwtToken, role);
+  // Devuelve una forma normalizada
+  return { jwtToken, user };
 };
+
 
 
 // ✅ Consultar si el usuario ya completó registro
