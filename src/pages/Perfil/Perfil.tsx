@@ -1,4 +1,4 @@
-import { IonButton, IonCard, IonCardContent, IonContent, IonItem, IonLabel, IonInput, IonRadio, IonRadioGroup, IonToast, IonIcon, IonSpinner } from "@ionic/react";
+import { IonButton, IonCard, IonCardContent, IonContent, IonItem, IonLabel, IonInput, IonRadio, IonRadioGroup, IonToast, IonIcon, IonSpinner, RadioGroupChangeEventDetail,InputChangeEventDetail } from "@ionic/react";
 import "./Perfil.css";
 import FruticaLayout from "../../components/Layout/FruticaLayout";
 import { useState, useEffect } from "react";
@@ -46,7 +46,7 @@ const Perfil: React.FC = () => {
                 setApellidoPaterno(perfil.apellido_paterno || "");
                 setApellidoMaterno(perfil.apellido_materno || "");
                 setTelefono(perfil.telefono || "");
-                setSexo(perfil.sexo || "");
+                setSexo(toUiSexo(perfil.sexo))
                 setEmail(perfil.email || "");
             }
 
@@ -75,7 +75,7 @@ const Perfil: React.FC = () => {
                 apellido_paterno: apellidoPaterno,
                 apellido_materno: apellidoMaterno,
                 telefono,
-                sexo,
+                sexo: toDbSexo(sexo),
             });
 
             setShowToast({ show: true, message: 'Datos personales actualizados correctamente', color: 'success' });
@@ -131,6 +131,20 @@ const Perfil: React.FC = () => {
         setLoading(false);
     };
 
+    //helpers
+    const toUiSexo = (s?: string) => {
+        const v = (s || '').toLowerCase().trim();
+        if (v.startsWith('fem') || v === 'mujer') return 'mujer';
+        if (v.startsWith('mas') || v === 'hombre') return 'hombre';
+        return '';
+    };
+
+    const toDbSexo = (s?: string) => {
+        if (s === 'mujer') return 'Femenino';
+        if (s === 'hombre') return 'Masculino';
+        return s || '';
+    };
+
     return (
         <FruticaLayout>
             <IonContent fullscreen className="perfil-container">
@@ -139,13 +153,13 @@ const Perfil: React.FC = () => {
                         {/* DATOS PERSONALES */}
                         <div className="profile-section">
                             <h2>Datos personales</h2>
-                            <IonInput label="Nombres:" value={nombre} onIonChange={(e) => setNombre(e.detail.value!)} labelPlacement="stacked" />
-                            <IonInput label="Apellido paterno:" value={apellidoPaterno} onIonChange={(e) => setApellidoPaterno(e.detail.value!)} labelPlacement="stacked" />
-                            <IonInput label="Apellido materno:" value={apellidoMaterno} onIonChange={(e) => setApellidoMaterno(e.detail.value!)} labelPlacement="stacked" />
-                            <IonInput label="Celular:" value={telefono} onIonChange={(e) => setTelefono(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Nombres:" value={nombre} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setNombre(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Apellido paterno:" value={apellidoPaterno} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setApellidoPaterno(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Apellido materno:" value={apellidoMaterno} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setApellidoMaterno(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Celular:" value={telefono} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setTelefono(e.detail.value!)} labelPlacement="stacked" />
 
                             <IonLabel>Sexo:</IonLabel>
-                            <IonRadioGroup value={sexo} onIonChange={(e) => setSexo(e.detail.value)}>
+                            <IonRadioGroup value={sexo} onIonChange={(e: CustomEvent<RadioGroupChangeEventDetail>) => setSexo(e.detail.value)}>
                                 <div className="radio-inline-group">
                                     <IonItem className="radio-inline-item">
                                         <IonRadio value="hombre" /> <IonLabel>Hombre</IonLabel>
@@ -164,13 +178,13 @@ const Perfil: React.FC = () => {
                         <div className="profile-section">
                             <h2>Datos de la cuenta</h2>
                             <IonInput label="Correo electrónico" value={email} readonly labelPlacement="stacked" />
-                            <IonInput label="Contraseña actual" value={currentPassword} type={showPassword ? 'text' : 'password'} onIonChange={(e) => setCurrentPassword(e.detail.value!)}>
+                            <IonInput label="Contraseña actual" value={currentPassword} type={showPassword ? 'text' : 'password'} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setCurrentPassword(e.detail.value!)}>
                                 <IonIcon icon={showPassword ? eyeOff : eye} slot="end" onClick={() => setShowPassword(!showPassword)} />
                             </IonInput>
-                            <IonInput label="Nueva contraseña" value={newPassword} type={showNewPassword ? 'text' : 'password'} onIonChange={(e) => setNewPassword(e.detail.value!)}>
+                            <IonInput label="Nueva contraseña" value={newPassword} type={showNewPassword ? 'text' : 'password'} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setNewPassword(e.detail.value!)}>
                                 <IonIcon icon={showNewPassword ? eyeOff : eye} slot="end" onClick={() => setShowNewPassword(!showNewPassword)} />
                             </IonInput>
-                            <IonInput label="Confirmar nueva contraseña" value={confirmPassword} type={showConfirmPassword ? 'text' : 'password'} onIonChange={(e) => setConfirmPassword(e.detail.value!)}>
+                            <IonInput label="Confirmar nueva contraseña" value={confirmPassword} type={showConfirmPassword ? 'text' : 'password'} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setConfirmPassword(e.detail.value!)}>
                                 <IonIcon icon={showConfirmPassword ? eyeOff : eye} slot="end" onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
                             </IonInput>
                             <IonButton expand="block" onClick={handleGuardarPassword} color="warning">
@@ -181,10 +195,10 @@ const Perfil: React.FC = () => {
                         {/* DATOS FACTURACIÓN */}
                         <div className="profile-section">
                             <h2>Datos de facturación</h2>
-                            <IonInput label="RFC" value={rfc} onIonChange={(e) => setRfc(e.detail.value!)} labelPlacement="stacked" />
-                            <IonInput label="Razón social" value={razonSocial} onIonChange={(e) => setRazonSocial(e.detail.value!)} labelPlacement="stacked" />
-                            <IonInput label="Uso de factura" value={usoFactura} onIonChange={(e) => setUsoFactura(e.detail.value!)} labelPlacement="stacked" />
-                            <IonInput label="Tipo de persona" value={tipoPersona} onIonChange={(e) => setTipoPersona(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="RFC" value={rfc} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setRfc(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Razón social" value={razonSocial} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setRazonSocial(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Uso de factura" value={usoFactura} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setUsoFactura(e.detail.value!)} labelPlacement="stacked" />
+                            <IonInput label="Tipo de persona" value={tipoPersona} onIonChange={(e: CustomEvent<InputChangeEventDetail>) => setTipoPersona(e.detail.value!)} labelPlacement="stacked" />
 
                             <IonButton expand="block" onClick={handleGuardarFacturacion} color="primary">
                                 {loading ? <IonSpinner name="crescent" /> : 'Guardar facturación'}

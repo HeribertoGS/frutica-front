@@ -1,10 +1,10 @@
-import axios, {AxiosError} from 'axios';
+import axios, { AxiosError } from 'axios';
 import { saveUserSession, getUserSession, getUserId, getToken } from './secureStorage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 
 const API = axios.create({
-  baseURL:import.meta.env.VITE_API_URL || 'http://localhost:4000/api', 
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
 });
 
 API.interceptors.request.use(async (config) => {
@@ -92,7 +92,7 @@ export const loginConGoogle = async (idTokenFirebase: string) => {
     try {
       const body = await res.json();
       msg = body?.message || msg;
-    } catch {}
+    } catch { }
     const e: any = new Error(msg);
     e.status = res.status;
     throw e;
@@ -189,13 +189,14 @@ export const crearProducto = async (producto: any, fotos: File[]) => {
     formData.append('foto', file); // debe coincidir con el nombre en FilesInterceptor
   });
 
- for (const key in producto) {
-  const valor = producto[key];
-  if (typeof valor === 'boolean') {
-    formData.append(key, valor ? 'true' : 'false');
-  } else if (valor !== undefined && valor !== null) {
-    formData.append(key, valor.toString());
-  }}
+  for (const key in producto) {
+    const valor = producto[key];
+    if (typeof valor === 'boolean') {
+      formData.append(key, valor ? 'true' : 'false');
+    } else if (valor !== undefined && valor !== null) {
+      formData.append(key, valor.toString());
+    }
+  }
 
   const res = await fetch(`${API_URL}/productos/crear`, {
     method: 'POST',
@@ -490,96 +491,96 @@ export const eliminarDatosPersonales = async (id: number) => {
 // ----------- DETALLE PEDIDO -----------
 
 export interface DetallePedidoData {
-    productoId: number;
-    pedidoId: number;
-    cantidad: number;
-    precio_unitario: number;
-    tamano?: string;
-    peso_total?: number;
-    // Agrega otros campos si tu DTO los incluye
-  }
-  
-  // 1. Crear detalle de pedido
-  export const crearDetallePedido = async (data: DetallePedidoData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detallepedido`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo crear el detalle del pedido');
-    return res.json();
-  };
-  
-  // 2. Obtener todos los detalles (admin)
-  export const obtenerDetallesPedidos = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detallepedido`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudieron obtener los detalles de pedido');
-    return res.json();
-  };
-  
-  // 3. Obtener detalle por ID
-  export const obtenerPedidoPorId = async (pedidoId: number) => {
-    try {
-      const token = await getUserSession();
-      const response = await fetch(`http://localhost:4000/api/pedidos/${pedidoId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error('Error al cargar el pedido');
-      }
-  
-      return await response.json();
-    } catch (error) {
-      console.error('Error cargando pedido real:', error);
-      throw error;
-    }
-  };
-  // 4. Actualizar detalle de pedido
-  export const actualizarDetallePedido = async (id: number, data: Partial<DetallePedidoData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detallepedido/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo actualizar el detalle del pedido');
-    return res.json();
-  };
+  productoId: number;
+  pedidoId: number;
+  cantidad: number;
+  precio_unitario: number;
+  tamano?: string;
+  peso_total?: number;
+  // Agrega otros campos si tu DTO los incluye
+}
 
-  
-  
-  // 5. Eliminar detalle de pedido
-  export const eliminarDetallePedido = async (id: number) => {
+// 1. Crear detalle de pedido
+export const crearDetallePedido = async (data: DetallePedidoData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detallepedido`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo crear el detalle del pedido');
+  return res.json();
+};
+
+// 2. Obtener todos los detalles (admin)
+export const obtenerDetallesPedidos = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detallepedido`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudieron obtener los detalles de pedido');
+  return res.json();
+};
+
+// 3. Obtener detalle por ID
+export const obtenerPedidoPorId = async (pedidoId: number) => {
+  try {
     const token = await getUserSession();
-    const res = await fetch(`${API_URL}/detallepedido/${id}`, {
-      method: 'DELETE',
+    const response = await fetch(`http://localhost:4000/api/pedidos/${pedidoId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
-  
-    if (!res.ok) throw new Error('No se pudo eliminar el detalle del pedido');
-    return res.json();
-  };
-  // ----------- DETALLE FACTURA -----------
+
+    if (!response.ok) {
+      throw new Error('Error al cargar el pedido');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error cargando pedido real:', error);
+    throw error;
+  }
+};
+// 4. Actualizar detalle de pedido
+export const actualizarDetallePedido = async (id: number, data: Partial<DetallePedidoData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detallepedido/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo actualizar el detalle del pedido');
+  return res.json();
+};
+
+
+
+// 5. Eliminar detalle de pedido
+export const eliminarDetallePedido = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/detallepedido/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo eliminar el detalle del pedido');
+  return res.json();
+};
+// ----------- DETALLE FACTURA -----------
 
 export interface DetalleFacturaData {
   facturaId: number;
@@ -812,12 +813,34 @@ export const actualizarPerfilUsuario = async (token: string, datos: any) => {
 };
 
 // Actualizar contraseña del usuario
-export const actualizarPasswordUsuario = async (token: string, passwords: { currentPassword: string; newPassword: string }) => {
-  const res = await API.patch("/credenciales/actualizar-password", passwords, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data;
+// api.ts
+export const actualizarPasswordUsuario = async (
+  token: string,
+  passwords: { currentPassword: string; newPassword: string } // ajusta si tu backend solo pide newPassword
+) => {
+  try {
+    const { data } = await API.patch(
+      '/credenciales/actualizar-password',
+      passwords,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return data; // ej: { message: 'Contraseña actualizada correctamente' }
+  } catch (err: any) {
+    const status = err?.response?.status;
+    const message =
+      err?.response?.data?.message ??
+      (status === 400
+        ? 'La contraseña actual no es correcta'
+        : status === 403
+          ? 'Tu cuenta no está activa'
+          : 'No se pudo actualizar la contraseña');
+
+    const e: any = new Error(message);
+    e.status = status;
+    throw e;
+  }
 };
+
 
 // Guardar/Actualizar datos de facturación del usuario
 export const guardarFacturacion = async (token: string, datos: { rfc: string; razon_social: string; uso_factura: string; tipo_persona: string }) => {
@@ -832,282 +855,282 @@ export const guardarFacturacion = async (token: string, datos: { rfc: string; ra
 // ----------- FACTURAS -----------
 
 export interface FacturaData {
-    rfc: string;
-    razon_social: string;
-    uso_cfdi: string;
-    metodo_pago: string;
-    forma_pago: string;
-    direccion: string;
-    tipo_persona: 'FISICA' | 'MORAL';
-    usuarioId: number;
-    pedidoId: number;
-    // Agrega los que correspondan a tu DTO real
-  }
-  
-  // 1. Crear factura
-  export const crearFactura = async (data: FacturaData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo crear la factura');
-    return res.json();
-  };
-  
-  // 2. Validar RFC
-  export const validarRFC = async (rfc: string) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura/validar-rfc`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ rfc }),
-    });
-  
-    if (!res.ok) throw new Error('RFC inválido');
-    return res.json();
-  };
-  
-  // 3. Obtener todas las facturas (admin)
-  export const obtenerFacturas = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudieron obtener las facturas');
-    return res.json();
-  };
-  
-  // 4. Obtener factura por ID
-  export const obtenerFacturaPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo obtener la factura');
-    return res.json();
-  };
-  
-  // 5. Actualizar factura
-  export const actualizarFactura = async (id: number, data: Partial<FacturaData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo actualizar la factura');
-    return res.json();
-  };
-  
-  // 6. Eliminar factura
-  export const eliminarFactura = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo eliminar la factura');
-    return res.json();
-  };
-  
-  // 7. Descargar PDF (como blob)
-  export const descargarFacturaPDF = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/factura/pdf/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo generar el PDF');
-  
-    const blob = await res.blob();
-    return blob;
-  };
+  rfc: string;
+  razon_social: string;
+  uso_cfdi: string;
+  metodo_pago: string;
+  forma_pago: string;
+  direccion: string;
+  tipo_persona: 'FISICA' | 'MORAL';
+  usuarioId: number;
+  pedidoId: number;
+  // Agrega los que correspondan a tu DTO real
+}
+
+// 1. Crear factura
+export const crearFactura = async (data: FacturaData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo crear la factura');
+  return res.json();
+};
+
+// 2. Validar RFC
+export const validarRFC = async (rfc: string) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura/validar-rfc`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ rfc }),
+  });
+
+  if (!res.ok) throw new Error('RFC inválido');
+  return res.json();
+};
+
+// 3. Obtener todas las facturas (admin)
+export const obtenerFacturas = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudieron obtener las facturas');
+  return res.json();
+};
+
+// 4. Obtener factura por ID
+export const obtenerFacturaPorId = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo obtener la factura');
+  return res.json();
+};
+
+// 5. Actualizar factura
+export const actualizarFactura = async (id: number, data: Partial<FacturaData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo actualizar la factura');
+  return res.json();
+};
+
+// 6. Eliminar factura
+export const eliminarFactura = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo eliminar la factura');
+  return res.json();
+};
+
+// 7. Descargar PDF (como blob)
+export const descargarFacturaPDF = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/factura/pdf/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo generar el PDF');
+
+  const blob = await res.blob();
+  return blob;
+};
 //Obtener es publica
-  export const obtenerDireccionPublica = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/direcciones/publica`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo obtener la dirección pública');
-    return res.json();
-  };
-  // ----------- FORMAS DE PAGO -----------
+export const obtenerDireccionPublica = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/direcciones/publica`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener la dirección pública');
+  return res.json();
+};
+// ----------- FORMAS DE PAGO -----------
 
 export interface FormaPagoData {
-    nombre_forma: string;
-    requiere_terminacion: boolean;
-    is_internet: boolean;
-    logo?: string;
-    activo: boolean;
-  }
-  
-  // 1. Crear forma de pago (ADMIN)
-  export const crearFormaPago = async (data: FormaPagoData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/forma-pago`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo crear la forma de pago');
-    return res.json();
-  };
-  
-  // 2. Obtener todas las formas de pago (admin/user)
-  export const obtenerFormasPago = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/forma-pago`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudieron obtener las formas de pago');
-    return res.json();
-  };
-  
-  // 3. Obtener forma de pago por ID
-  export const obtenerFormaPagoPorId = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/forma-pago/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo obtener la forma de pago');
-    return res.json();
-  };
-  
-  // 4. Obtener formas de pago activas (solo admin)
-  export const obtenerFormasPagoActivas = async () => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/forma-pago/activos`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener las formas de pago activas');
-    return res.json();
-  };
+  nombre_forma: string;
+  requiere_terminacion: boolean;
+  is_internet: boolean;
+  logo?: string;
+  activo: boolean;
+}
 
-  // 5. Actualizar forma de pago
-  export const actualizarFormaPago = async (id: number, data: Partial<FormaPagoData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/forma-pago/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-  
-    if (!res.ok) throw new Error('No se pudo actualizar la forma de pago');
-    return res.json();
-  };
-  
-  // 6. Eliminar forma de pago
-  export const eliminarFormaPago = async (id: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/forma-pago/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudo eliminar la forma de pago');
-    return res.json();
-  };
+// 1. Crear forma de pago (ADMIN)
+export const crearFormaPago = async (data: FormaPagoData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/forma-pago`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo crear la forma de pago');
+  return res.json();
+};
+
+// 2. Obtener todas las formas de pago (admin/user)
+export const obtenerFormasPago = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/forma-pago`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudieron obtener las formas de pago');
+  return res.json();
+};
+
+// 3. Obtener forma de pago por ID
+export const obtenerFormaPagoPorId = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/forma-pago/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo obtener la forma de pago');
+  return res.json();
+};
+
+// 4. Obtener formas de pago activas (solo admin)
+export const obtenerFormasPagoActivas = async () => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/forma-pago/activos`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener las formas de pago activas');
+  return res.json();
+};
+
+// 5. Actualizar forma de pago
+export const actualizarFormaPago = async (id: number, data: Partial<FormaPagoData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/forma-pago/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('No se pudo actualizar la forma de pago');
+  return res.json();
+};
+
+// 6. Eliminar forma de pago
+export const eliminarFormaPago = async (id: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/forma-pago/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudo eliminar la forma de pago');
+  return res.json();
+};
 
 
 // ----------- LISTA DE DESEOS -----------
 
-  export const agregarAListaDeseos = async (productoId: number) => {
-    const token = await getUserSession();
-    const userId = await getUserId(); // lo cargas del secureStorage
-  
-    const res = await fetch(`${API_URL}/lista-deseos/${productoId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ userId }), // aunque tu controller no lo pide explícito, algunos setups lo requieren
-    });
-  
-    if (!res.ok) {
-      throw new Error('No se pudo agregar a la lista de deseos');
-    }
-    return await res.json();
-  };
-  
-  export const quitarDeListaDeseos = async (productoId: number) => {
-    const token = await getUserSession();
-    const userId = await getUserId();
-  
-    const res = await fetch(`${API_URL}/lista-deseos/${productoId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) {
-      throw new Error('No se pudo eliminar de la lista de deseos');
-    }
-    return await res.json();
-  };
-  export const obtenerListaDeseos = async () => {
-    const token = await getUserSession();
-    const userId = await getUserId();
-  
-    const res = await fetch(`${API_URL}/lista-deseos`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) {
-      throw new Error('No se pudo obtener la lista de deseos');
-    }
-    return await res.json();
-  };
-    
-  // ----------- NOTIFICACIONES -----------
+export const agregarAListaDeseos = async (productoId: number) => {
+  const token = await getUserSession();
+  const userId = await getUserId(); // lo cargas del secureStorage
+
+  const res = await fetch(`${API_URL}/lista-deseos/${productoId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId }), // aunque tu controller no lo pide explícito, algunos setups lo requieren
+  });
+
+  if (!res.ok) {
+    throw new Error('No se pudo agregar a la lista de deseos');
+  }
+  return await res.json();
+};
+
+export const quitarDeListaDeseos = async (productoId: number) => {
+  const token = await getUserSession();
+  const userId = await getUserId();
+
+  const res = await fetch(`${API_URL}/lista-deseos/${productoId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('No se pudo eliminar de la lista de deseos');
+  }
+  return await res.json();
+};
+export const obtenerListaDeseos = async () => {
+  const token = await getUserSession();
+  const userId = await getUserId();
+
+  const res = await fetch(`${API_URL}/lista-deseos`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('No se pudo obtener la lista de deseos');
+  }
+  return await res.json();
+};
+
+// ----------- NOTIFICACIONES -----------
 
 export interface NotificacionData {
   titulo: string;
@@ -1174,9 +1197,9 @@ export interface OfertaData {
   productoId: number;
   precio_oferta: number;
   porcentaje_descuento?: number;
-  inicio: string;            
-  fin: string;             
-  descripcion?: string;      
+  inicio: string;
+  fin: string;
+  descripcion?: string;
   activa?: boolean;
 }
 
@@ -1222,9 +1245,9 @@ export const obtenerOfertas = async () => {
 export const obtenerOfertasActivas = async () => {
   const token = await getUserSession();
   const res = await fetch(`${API_URL}/ofertas/activas`, {
-      headers: {
-          Authorization: `Bearer ${token}`,
-      },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) throw new Error('No se pudieron obtener las ofertas activas');
@@ -1286,7 +1309,7 @@ export const eliminarOferta = async (id: number) => {
   return res.json();
 };
 
- // ----------- TIPO DE ENTREGA -----------
+// ----------- TIPO DE ENTREGA -----------
 
 export interface TipoEntregaData {
   metodo_entrega: 'Entrega a domicilio' | 'Pasar a recoger';
@@ -1374,168 +1397,168 @@ export const eliminarTipoEntrega = async (id: number) => {
 // ----------- PAGOS -----------
 
 export interface CreatePagoData {
-    userId: number;
-    metodo: string;
-    pedidoId: number;
+  userId: number;
+  metodo: string;
+  pedidoId: number;
+}
+
+// 1. Crear un pago para un pedido
+export const crearPago = async (data: CreatePagoData) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pagos/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo crear el pago');
+  return res.json();
+};
+
+// 2. Confirmar pago con tarjeta (Stripe)
+export const confirmarPagoStripe = async (paymentIntentId: string) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pagos/confirm-payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ paymentIntentId }),
+  });
+  if (!res.ok) throw new Error('No se pudo confirmar el pago con Stripe');
+  return res.json();
+};
+
+/*///////xxxxxxxxdddddddddddddddd///////*/
+
+export const iniciarPagoTarjeta = async (pedidoId: number) => {
+  try {
+    const token = await getToken(); // Obtenemos el token de secureStorage
+    const response = await fetch(`${API_URL}/pagos/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Solo si tu backend requiere JWT
+      },
+      body: JSON.stringify({
+        pedidoId: pedidoId,
+        metodo: 'tarjeta',
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al iniciar pago');
+    }
+
+    const data = await response.json();
+    return data; // { clientSecret, paymentId, estadoPago, totalCompra }
+  } catch (error) {
+    console.error('Error al iniciar pago con tarjeta:', error);
+    throw error;
   }
-  
-  // 1. Crear un pago para un pedido
-  export const crearPago = async (data: CreatePagoData) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pagos/create`, {
+};
+
+
+// 3. Obtener detalles de un pago por ID
+export const obtenerDetallesPago = async (paymentId: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pagos/detalles/${paymentId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los detalles del pago');
+  return res.json();
+};
+
+// 4. Obtener pagos por usuario
+export const obtenerPagosPorUsuario = async (userId: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pagos/usuario/${userId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los pagos del usuario');
+  return res.json();
+};
+
+// 5. Actualizar estado del pago (admin)
+export const actualizarEstadoPago = async (id: number, nuevoEstado: string) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pagos/update-status/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ state: nuevoEstado }),
+  });
+  if (!res.ok) throw new Error('No se pudo actualizar el estado del pago');
+  return res.json();
+};
+
+// 6. Subir comprobante de pago (Cloudinary)
+export const subirComprobantePago = async (pagoId: number, archivo: File) => {
+  const token = await getUserSession();
+  const formData = new FormData();
+  formData.append('file', archivo);
+
+  console.log(`Enviando archivo a: ${API_URL}/pagos/subir-comprobante/${pagoId}`);
+  console.log('Tamaño del archivo:', (archivo.size / 1024).toFixed(2), 'KB');
+  console.log('Tipo de archivo:', archivo.type);
+
+  try {
+    const res = await fetch(`${API_URL}/pagos/subir-comprobante/${pagoId}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
+        // No incluir Content-Type aquí, el navegador lo configura automáticamente con FormData
       },
-      body: JSON.stringify(data),
+      body: formData,
     });
-    if (!res.ok) throw new Error('No se pudo crear el pago');
-    return res.json();
-  };
-  
-  // 2. Confirmar pago con tarjeta (Stripe)
-  export const confirmarPagoStripe = async (paymentIntentId: string) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pagos/confirm-payment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ paymentIntentId }),
-    });
-    if (!res.ok) throw new Error('No se pudo confirmar el pago con Stripe');
-    return res.json();
-  };
 
-  /*///////xxxxxxxxdddddddddddddddd///////*/ 
+    // Depuración de la respuesta
+    console.log('Respuesta del servidor:', res.status, res.statusText);
 
-  export const iniciarPagoTarjeta = async (pedidoId: number) => {
-    try {
-      const token = await getToken(); // Obtenemos el token de secureStorage
-      const response = await fetch(`${API_URL}/pagos/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Solo si tu backend requiere JWT
-        },
-        body: JSON.stringify({
-          pedidoId: pedidoId,
-          metodo: 'tarjeta',
-        }),
-      });
-  
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error al iniciar pago');
-      }
-  
-      const data = await response.json();
-      return data; // { clientSecret, paymentId, estadoPago, totalCompra }
-    } catch (error) {
-      console.error('Error al iniciar pago con tarjeta:', error);
-      throw error;
+    if (!res.ok) {
+      // Intentar leer la respuesta del error
+      const errorData = await res.json().catch(() => ({}));
+      console.error('Error del servidor:', errorData);
+      throw new Error(errorData.message || 'No se pudo subir el comprobante');
     }
-  };
-  
-  
-  // 3. Obtener detalles de un pago por ID
-  export const obtenerDetallesPago = async (paymentId: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pagos/detalles/${paymentId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los detalles del pago');
+
     return res.json();
-  };
-  
-  // 4. Obtener pagos por usuario
-  export const obtenerPagosPorUsuario = async (userId: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pagos/usuario/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los pagos del usuario');
-    return res.json();
-  };
-  
-  // 5. Actualizar estado del pago (admin)
-  export const actualizarEstadoPago = async (id: number, nuevoEstado: string) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pagos/update-status/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ state: nuevoEstado }),
-    });
-    if (!res.ok) throw new Error('No se pudo actualizar el estado del pago');
-    return res.json();
-  };
-  
-  // 6. Subir comprobante de pago (Cloudinary)
-  export const subirComprobantePago = async (pagoId: number, archivo: File) => {
-    const token = await getUserSession();
-    const formData = new FormData();
-    formData.append('file', archivo);
-  
-    console.log(`Enviando archivo a: ${API_URL}/pagos/subir-comprobante/${pagoId}`);
-    console.log('Tamaño del archivo:', (archivo.size / 1024).toFixed(2), 'KB');
-    console.log('Tipo de archivo:', archivo.type);
-  
-    try {
-      const res = await fetch(`${API_URL}/pagos/subir-comprobante/${pagoId}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // No incluir Content-Type aquí, el navegador lo configura automáticamente con FormData
-        },
-        body: formData,
-      });
-  
-      // Depuración de la respuesta
-      console.log('Respuesta del servidor:', res.status, res.statusText);
-      
-      if (!res.ok) {
-        // Intentar leer la respuesta del error
-        const errorData = await res.json().catch(() => ({}));
-        console.error('Error del servidor:', errorData);
-        throw new Error(errorData.message || 'No se pudo subir el comprobante');
-      }
-      
-      return res.json();
-    } catch (error) {
-      console.error('Error completo:', error);
-      throw error;
-    }
-  };
-  // ----------- PEDIDOS -----------
+  } catch (error) {
+    console.error('Error completo:', error);
+    throw error;
+  }
+};
+// ----------- PEDIDOS -----------
 
 export interface PedidoData {
-    usuarioId: number;
-    tipoEntregaId: number;
-    formaPagoId: number;
-    comentarioId?: number;
-    total: number;
-    subtotal: number;
-    detalles: any[];
-  }
-  
-  export interface FiltroPedidos {
-    estados: string[];
-    usuarioId?: number;
-    desde?: Date;
-    hasta?: Date;
-    metodoPago?: string;
-  }
- //Crear pedido 
- export const crearPedidoFrutica = async (data: {
+  usuarioId: number;
+  tipoEntregaId: number;
+  formaPagoId: number;
+  comentarioId?: number;
+  total: number;
+  subtotal: number;
+  detalles: any[];
+}
+
+export interface FiltroPedidos {
+  estados: string[];
+  usuarioId?: number;
+  desde?: Date;
+  hasta?: Date;
+  metodoPago?: string;
+}
+//Crear pedido 
+export const crearPedidoFrutica = async (data: {
   tipo_entrega: "Entrega a domicilio" | "Pasar a recoger";
   formaPagoId: number;
   direccionId?: number;
@@ -1565,114 +1588,114 @@ export interface PedidoData {
 };
 
 
-  // 2. Obtener pedidos por usuario (admin/user)
-  export const obtenerPedidosUsuario = async () => {
-    const token = await getUserSession();
-    const userId = await getUserId();
-  
-    if (!token || !userId) {
-      throw new Error('Usuario no autenticado');
-    }
-  
-    const res = await fetch(`${API_URL}/pedidos/ver_pedidos_usuario/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) {
-      const errorData = await res.json();
-      console.error(' Error al obtener pedidos:', errorData);
-      throw new Error(errorData.message || 'Error al obtener pedidos');
-    }
-  
-    return res.json();
-  };
-  
-  // 3. Obtener pedidos por estado
-  export const obtenerPedidosPorEstado = async (estados: string[]) => {
-    const token = await getUserSession();
-    const estadoParam = estados.join(',');
-    const res = await fetch(`${API_URL}/pedidos/por-estado?estado=${estadoParam}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudieron obtener los pedidos por estado');
-    return res.json();
-  };
-  
-  // 4. Filtro avanzado (admin)
-  export const obtenerPedidosPorFiltros = async (filtros: FiltroPedidos) => {
-    const token = await getUserSession();
-    const query = new URLSearchParams();
-    if (filtros.estados.length) query.append('estado', filtros.estados.join(','));
-    if (filtros.usuarioId) query.append('usuario', filtros.usuarioId.toString());
-    if (filtros.desde) query.append('desde', filtros.desde.toISOString());
-    if (filtros.hasta) query.append('hasta', filtros.hasta.toISOString());
-    if (filtros.metodoPago) query.append('metodoPago', filtros.metodoPago);
-  
-    const res = await fetch(`${API_URL}/pedidos/filtro?${query.toString()}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  
-    if (!res.ok) throw new Error('No se pudieron obtener los pedidos filtrados');
-    return res.json();
-  };
-  
-  // 5. Obtener todos los pedidos (admin)
-  export async function obtenerTodosPedidos() {
-    try {
-      const token = await getToken(); // Aquí usamos tu función
-      const response = await fetch(`${API_URL}/pedidos`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Error al obtener todos los pedidos');
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error obteniendo todos los pedidos:', error);
-      throw error;
-    }
-  }
-  
-  
-  // 6. Obtener detalle de un pedido
-  export const obtenerDetallePedido = async (pedidoId: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo obtener el detalle del pedido');
-    return res.json();
-  };
-  
-  // 7. Actualizar pedido (admin/user)
-  export const actualizarPedido = async (pedidoId: number, data: Partial<PedidoData>) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('No se pudo actualizar el pedido');
-    return res.json();
-  };
-  
-  // 8. Cambiar estado del pedido (admin)
+// 2. Obtener pedidos por usuario (admin/user)
+export const obtenerPedidosUsuario = async () => {
+  const token = await getUserSession();
+  const userId = await getUserId();
 
-  
+  if (!token || !userId) {
+    throw new Error('Usuario no autenticado');
+  }
+
+  const res = await fetch(`${API_URL}/pedidos/ver_pedidos_usuario/${userId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    console.error(' Error al obtener pedidos:', errorData);
+    throw new Error(errorData.message || 'Error al obtener pedidos');
+  }
+
+  return res.json();
+};
+
+// 3. Obtener pedidos por estado
+export const obtenerPedidosPorEstado = async (estados: string[]) => {
+  const token = await getUserSession();
+  const estadoParam = estados.join(',');
+  const res = await fetch(`${API_URL}/pedidos/por-estado?estado=${estadoParam}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudieron obtener los pedidos por estado');
+  return res.json();
+};
+
+// 4. Filtro avanzado (admin)
+export const obtenerPedidosPorFiltros = async (filtros: FiltroPedidos) => {
+  const token = await getUserSession();
+  const query = new URLSearchParams();
+  if (filtros.estados.length) query.append('estado', filtros.estados.join(','));
+  if (filtros.usuarioId) query.append('usuario', filtros.usuarioId.toString());
+  if (filtros.desde) query.append('desde', filtros.desde.toISOString());
+  if (filtros.hasta) query.append('hasta', filtros.hasta.toISOString());
+  if (filtros.metodoPago) query.append('metodoPago', filtros.metodoPago);
+
+  const res = await fetch(`${API_URL}/pedidos/filtro?${query.toString()}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('No se pudieron obtener los pedidos filtrados');
+  return res.json();
+};
+
+// 5. Obtener todos los pedidos (admin)
+export async function obtenerTodosPedidos() {
+  try {
+    const token = await getToken(); // Aquí usamos tu función
+    const response = await fetch(`${API_URL}/pedidos`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Error al obtener todos los pedidos');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error obteniendo todos los pedidos:', error);
+    throw error;
+  }
+}
+
+
+// 6. Obtener detalle de un pedido
+export const obtenerDetallePedido = async (pedidoId: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo obtener el detalle del pedido');
+  return res.json();
+};
+
+// 7. Actualizar pedido (admin/user)
+export const actualizarPedido = async (pedidoId: number, data: Partial<PedidoData>) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('No se pudo actualizar el pedido');
+  return res.json();
+};
+
+// 8. Cambiar estado del pedido (admin)
+
+
 export const cambiarEstadoPedido = async (pedidoId: number, nuevoEstado: string, comentario?: string) => {
   const token = await getUserSession();
   const response = await fetch(`${API_URL}/pedidos/${pedidoId}/cambiar-estado`, {
@@ -1695,21 +1718,21 @@ export const cambiarEstadoPedido = async (pedidoId: number, nuevoEstado: string,
 
   return await response.json();
 };
-  
-  // 9. Eliminar pedido (admin)
-  export const eliminarPedido = async (pedidoId: number) => {
-    const token = await getUserSession();
-    const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error('No se pudo eliminar el pedido');
-    return res.json();
-  };
-  
-  ///***CARRITO** */
+
+// 9. Eliminar pedido (admin)
+export const eliminarPedido = async (pedidoId: number) => {
+  const token = await getUserSession();
+  const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error('No se pudo eliminar el pedido');
+  return res.json();
+};
+
+///***CARRITO** */
 export interface CrearProductoCarritoDto {
   usuarioId: number;
   productoId: number;
@@ -1739,7 +1762,7 @@ export const obtenerCarritoUsuario = async () => {
   // Si el carrito no existe (404), devolver un carrito vacío
   if (res.status === 404) {
     console.log('Carrito no existe para usuario', userId, '- devolviendo carrito vacío');
-    return { 
+    return {
       items: [],
       usuario_id: userId,
       total: 0

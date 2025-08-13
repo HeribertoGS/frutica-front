@@ -15,4 +15,7 @@ declare module 'ionicons/icons' {
   export const flame: string;
   export const logOut: string;
   export const addCircle: string;
+  export const eye: string;
+  export const eyeOff: string;
+  
 }

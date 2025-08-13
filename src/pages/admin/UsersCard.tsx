@@ -1,6 +1,7 @@
 // src/pages/admin/UsersCard.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-import {IonPage, IonContent, IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
+import {
+    IonPage, IonContent, IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonGrid, IonRow, IonCol, IonBadge, IonIcon, IonSearchbar, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonItem, IonLabel,
     IonInput, IonSpinner, useIonToast, IonText, IonFooter, SearchbarInputEventDetail, InputInputEventDetail
 } from '@ionic/react';
@@ -77,6 +78,12 @@ const UsersCard: React.FC = () => {
             }
             setShowModal(false);
             await cargar();
+
+            const data = await adminUsuariosService.getAll();
+            console.log('UsersCard recibe:', data);
+            setUsuarios(data);
+            
+
         } catch (e) {
             console.error(e);
             notify('No se pudo guardar', 'danger');
@@ -139,8 +146,9 @@ const UsersCard: React.FC = () => {
                         ) : (
                             <IonGrid>
                                 <IonRow className="ion-text-center ion-hide-sm-down" style={{ fontWeight: 600 }}>
-                                    <IonCol size="4">Nombre</IonCol>
-                                    <IonCol size="4">Rol</IonCol>
+                                    <IonCol size="3">Nombre</IonCol>
+                                    <IonCol size="2">Rol</IonCol>
+                                    <IonCol size="3">Correo Electrónico</IonCol>
                                     <IonCol size="2">Estado</IonCol>
                                     <IonCol size="2">Acciones</IonCol>
                                 </IonRow>
@@ -151,13 +159,16 @@ const UsersCard: React.FC = () => {
                                         className="ion-align-items-center ion-text-center"
                                         style={{ borderTop: '1px solid #eee', padding: '8px 0' }}
                                     >
-                                        <IonCol size="12" sizeMd="4">
+                                        <IonCol size="12" sizeMd="3">
                                             <IonText><strong>{u.nombre} {u.apellido_paterno}</strong></IonText>
                                         </IonCol>
-                                        <IonCol size="6" sizeMd="4">
+                                        <IonCol size="6" sizeMd="2">
                                             <IonBadge color={String(u.role).toLowerCase() === 'admin' ? 'tertiary' : 'medium'}>
                                                 {String(u.role || 'user').toUpperCase()}
                                             </IonBadge>
+                                        </IonCol>
+                                        <IonCol size="12" sizeMd="3">
+                                            <IonText>{u.email}</IonText>
                                         </IonCol>
                                         <IonCol size="6" sizeMd="2">
                                             <IonBadge color={u.user_verificado ? 'success' : 'danger'}>
@@ -170,7 +181,7 @@ const UsersCard: React.FC = () => {
                                                     <IonIcon slot="start" icon={power} />
                                                     {u.user_verificado ? 'Desactivar' : 'Activar'}
                                                 </IonButton>
-                                                
+
                                                 <IonButton size="small" color="danger" fill="clear" onClick={() => removeUser(u)}>
                                                     <IonIcon slot="icon-only" icon={trash} />
                                                 </IonButton>
